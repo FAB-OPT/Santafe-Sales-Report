@@ -1,0 +1,1346 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Santa Fe – ส่งยอดขาย v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────── */
+:root {
+  --brand:   #f26c1c;
+  --brand-d: #d45a10;
+  --brand-l: #fff3eb;
+  --surface: #ffffff;
+  --bg:      #f4f6f8;
+  --txt:     #1c2232;
+  --txt2:    #5a6478;
+  --bd:      rgba(28,34,50,.10);
+  --green:   #15803d;
+  --green-l: #dcfce7;
+  --red:     #dc2626;
+  --red-l:   #fee2e2;
+  --blue:    #1d4ed8;
+  --blue-l:  #dbeafe;
+  --amber:   #92400e;
+  --amber-l: #fef3c7;
+  --shadow:  0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --radius:  14px;
+  --hdr-h:   56px;
+}
+
+/* ── RESET ───────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Sarabun', system-ui, sans-serif;
+  font-size: 15px;
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SCREEN ROUTER ───────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ─────────────────────────────────────────
+   HEADER
+───────────────────────────────────────── */
+.hdr {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--bd);
+  height: var(--hdr-h);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.hdr-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.hdr-logo-img {
+  height: 36px; width: 36px;
+  border-radius: 8px; object-fit: cover; display: block;
+}
+.login-logo-img {
+  width: 180px; height: 180px;
+  border-radius: 28px; object-fit: cover; display: block;
+  box-shadow: 0 8px 32px rgba(242,108,28,.25);
+}
+.hdr-divider { width: 1px; height: 24px; background: var(--bd); }
+.hdr-branch { flex: 1; min-width: 0; }
+.hdr-branch-name {
+  font-size: 14px; font-weight: 700; color: var(--txt);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hdr-branch-dm { font-size: 12px; color: var(--txt2); }
+.hdr-actions { display: flex; gap: 6px; }
+
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; font-family: inherit;
+  border: none; cursor: pointer; transition: all .18s;
+  white-space: nowrap; min-height: 40px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-brand { background: var(--brand); color: #fff; }
+.btn-brand:hover, .btn-brand:active { background: var(--brand-d); }
+.btn-outline { background: transparent; color: var(--txt); border: 1.5px solid var(--bd); }
+.btn-outline:hover { border-color: var(--brand); color: var(--brand); }
+.btn-ghost { background: rgba(255,255,255,.15); color: #fff; border: 1.5px solid rgba(255,255,255,.3); }
+.btn-ghost:hover { background: rgba(255,255,255,.25); }
+.btn-sm { padding: 7px 13px; font-size: 13px; min-height: 34px; border-radius: 8px; }
+.btn-lg { padding: 14px 28px; font-size: 16px; min-height: 50px; border-radius: 12px; width: 100%; }
+.btn:disabled { opacity: .55; cursor: default; pointer-events: none; }
+
+/* ─────────────────────────────────────────
+   LOGIN
+   หมายเหตุ: ไม่ใส่ display ใน #sLogin โดยตรง
+   เพราะ ID selector ชนะ .screen{display:none}
+   ให้ .login-bg จัดการ centering แทน
+───────────────────────────────────────── */
+#sLogin.active { display: block; }
+.login-bg {
+  min-height: 100vh; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(145deg, #fff5ee 0%, #f4f6f8 60%, #fff 100%);
+  padding: 20px 16px;
+}
+.login-card {
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(242,108,28,.13), 0 2px 8px rgba(0,0,0,.06);
+  padding: 40px 32px 32px;
+  width: min(420px, 100%);
+  text-align: center;
+}
+.login-logo-wrap { margin-bottom: 24px; display: flex; justify-content: center; }
+.login-title { font-size: 20px; font-weight: 800; color: var(--txt); margin-bottom: 4px; }
+.login-sub { font-size: 14px; color: var(--txt2); margin-bottom: 24px; }
+.login-otp { display: flex; gap: 10px; justify-content: center; margin-bottom: 0; }
+.login-otp-box {
+  width: 62px; height: 70px;
+  border: 2.5px solid var(--bd); border-radius: 14px;
+  font-size: 28px; font-weight: 800; text-align: center;
+  font-family: inherit; outline: none; color: var(--txt);
+  background: #fff; caret-color: var(--brand);
+  transition: border-color .2s, box-shadow .2s;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.login-otp-box::-webkit-outer-spin-button,
+.login-otp-box::-webkit-inner-spin-button { -webkit-appearance: none; }
+.login-otp-box:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(242,108,28,.12);
+}
+.login-otp-box.filled { border-color: var(--brand); background: #fff8f2; }
+.login-preview {
+  min-height: 52px; border-radius: 12px;
+  padding: 12px 16px; margin: 14px 0;
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+  transition: all .2s;
+}
+.login-preview.idle { opacity: 0; }
+.login-preview.ok {
+  background: var(--green-l); color: var(--green);
+  border: 1px solid #86efac;
+}
+.login-preview.err {
+  background: var(--red-l); color: var(--red);
+  border: 1px solid #fca5a5;
+}
+.login-preview-ico { font-size: 20px; flex-shrink: 0; }
+.login-preview-txt { text-align: left; }
+.login-preview-branch { font-weight: 700; font-size: 15px; }
+.login-preview-dm { font-size: 12px; margin-top: 2px; opacity: .85; }
+
+/* ─────────────────────────────────────────
+   FORM
+───────────────────────────────────────── */
+.rules-card {
+  background: #fffbf5; border: 1px solid #fed7aa;
+  border-radius: var(--radius); padding: 10px 16px 12px;
+  margin-bottom: 8px; font-size: 13px; color: #7c3008;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.rules-card-title {
+  font-weight: 700; font-size: 12px; color: var(--brand);
+  display: flex; align-items: center; gap: 5px; margin-bottom: 2px;
+}
+.rules-list { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.rules-list li { display: flex; gap: 6px; }
+.rules-list li::before { content: "•"; color: var(--brand); font-weight: 700; flex-shrink: 0; }
+.form-wrap { max-width: 860px; margin: 0 auto; padding: 10px 12px 96px; }
+.card {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); margin-bottom: 8px; overflow: hidden;
+}
+.card-hdr {
+  background: linear-gradient(135deg, var(--brand) 0%, #f88c3a 100%);
+  color: #fff; padding: 12px 18px;
+  font-size: 14px; font-weight: 700; letter-spacing: .2px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body { padding: 18px; }
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 12px;
+}
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--txt2); }
+.field input, .field select {
+  padding: 10px 13px;
+  border: 1.5px solid var(--bd); border-radius: 10px;
+  font-size: 16px; font-family: inherit; outline: none;
+  color: var(--txt); background: #fff;
+  transition: border-color .2s, box-shadow .2s;
+  min-height: 44px;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(242,108,28,.1);
+}
+.field input.error { border-color: var(--red); }
+.field-hint { font-size: 11.5px; color: #64748b; margin-top: 3px; font-weight: 500; }
+.field-hint.warn { color: #c2410c; font-weight: 600; }
+.field input:disabled, .field select:disabled {
+  background: #f1f5f9; color: #94a3b8; cursor: not-allowed; opacity: 1;
+}
+/* Info grid 3 cols (วันที่ รอบ ชื่อ) */
+.info-grid {
+  display: grid;
+  grid-template-columns: 160px 140px 1fr;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .info-grid { grid-template-columns: 1fr 1fr; }
+  .info-grid .field-name { grid-column: 1 / -1; }
+}
+.form-sticky-btn {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: var(--surface); border-top: 1px solid var(--bd);
+  padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.form-sticky-btn .btn { max-width: 500px; margin: 0 auto; display: flex; }
+
+/* ─────────────────────────────────────────
+   HISTORY
+───────────────────────────────────────── */
+.hist-wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+.hist-hdr {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.hist-hdr h2 { font-size: 18px; font-weight: 800; flex: 1; }
+/* Table (desktop) */
+.hist-table-wrap {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: auto;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead tr { background: linear-gradient(135deg, var(--brand), #f88c3a); color: #fff; }
+th { padding: 12px 14px; text-align: left; white-space: nowrap; font-weight: 700; font-size: 13px; }
+td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #fffbf7; }
+/* Cards (mobile) */
+.hist-cards { display: none; }
+.hist-card {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 16px; margin-bottom: 10px;
+}
+.hist-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.hist-card-date { font-size: 14px; font-weight: 700; flex: 1; }
+.hist-card-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13.5px; }
+.hist-card-row + .hist-card-row { border-top: 1px solid #f8fafc; }
+.hist-card-lbl { color: var(--txt2); }
+.hist-card-val { font-weight: 700; }
+.hist-card-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
+/* Show cards on mobile, table on desktop */
+@media (max-width: 640px) {
+  .hist-table-wrap { display: none; }
+  .hist-cards { display: block; }
+}
+
+/* ─────────────────────────────────────────
+   BADGES
+───────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 9px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; line-height: 1.4;
+}
+.badge-blue { background: var(--blue-l); color: var(--blue); }
+.badge-green { background: var(--green-l); color: var(--green); }
+.badge-amber { background: var(--amber-l); color: var(--amber); font-size: 11px; padding: 1px 7px; margin-left: 4px; }
+.pct-ok { color: var(--green); font-weight: 700; }
+.pct-low { color: var(--red); font-weight: 700; }
+
+/* ─────────────────────────────────────────
+   MODALS
+───────────────────────────────────────── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,15,30,.5);
+  backdrop-filter: blur(2px);
+  display: none; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  width: min(700px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.22);
+  animation: modalIn .22s ease-out;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(.96) translateY(10px); } }
+.modal-sm { max-width: 440px; }
+.modal-hdr {
+  background: linear-gradient(135deg, var(--brand), #f88c3a);
+  color: #fff; padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: 20px 20px 0 0;
+  position: sticky; top: 0;
+}
+.modal-hdr h3 { font-size: 16px; font-weight: 800; }
+.modal-close { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 6px; }
+.modal-close:hover { background: rgba(255,255,255,.2); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--bd); display: flex; gap: 10px; justify-content: flex-end; }
+.rv-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #f8fafc; font-size: 14px; }
+.rv-row:last-child { border-bottom: none; }
+.rv-lbl { color: var(--txt2); font-weight: 500; }
+.rv-val { font-weight: 700; }
+.rv-sec {
+  font-size: 12px; font-weight: 700; color: var(--brand);
+  background: linear-gradient(135deg, var(--brand), #f88c3a);
+  color: #fff; letter-spacing: .5px;
+  padding: 6px 20px; margin: 12px -20px 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.rv-hi {
+  background: #fff8f2; border-left: 3px solid var(--brand);
+  margin: 4px -20px; padding: 9px 20px;
+  border-bottom: 1px solid #ffe0c0;
+}
+.rv-hi .rv-lbl { color: var(--txt); font-weight: 700; }
+.rv-hi .rv-val { color: var(--brand); font-size: 15px; }
+/* Alert modal */
+.alert-ico { font-size: 54px; text-align: center; padding: 24px 0 8px; }
+.alert-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 8px; }
+.alert-msg { font-size: 14px; color: var(--txt2); text-align: center; line-height: 1.7; padding: 0 12px 20px; white-space: pre-line; }
+.alert-actions { display: flex; justify-content: center; gap: 10px; padding-bottom: 20px; }
+/* Edit info banner */
+.edit-banner {
+  background: var(--amber-l); border: 1px solid #fed7aa;
+  border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 16px; font-size: 13px; color: var(--amber);
+}
+
+/* ─────────────────────────────────────────
+   MISC / UTILITIES
+───────────────────────────────────────── */
+.spinner {
+  width: 38px; height: 38px;
+  border: 4px solid #f1f5f9; border-top-color: var(--brand);
+  border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 56px 20px; color: #94a3b8; }
+.empty-ico { font-size: 40px; margin-bottom: 10px; }
+.empty-txt { font-size: 15px; }
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .login-card { padding: 32px 20px 24px; }
+  .logo-mark-lg { padding: 10px 20px 12px; }
+  .logo-mark-lg .logo-mark-sf { font-size: 38px; }
+  .logo-mark-lg .logo-mark-hs { font-size: 10px; letter-spacing: 3px; }
+  .field-grid { grid-template-columns: 1fr 1fr; }
+  .field-grid.col3 { grid-template-columns: 1fr; }
+  .hdr-branch-name { font-size: 13px; }
+  .card-body { padding: 14px; }
+  .hist-hdr h2 { font-size: 16px; }
+}
+@media (max-width: 380px) {
+  .login-code-inp { font-size: 26px; letter-spacing: 7px; }
+  .field-grid { grid-template-columns: 1fr; }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .field-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     SHARED HEADER (hidden until logged in)
+════════════════════════════════════════ -->
+<header class="hdr" id="appHdr" style="display:none">
+  <div class="hdr-logo">
+    <img src="536282464_1192954076197758_7560981869126705598_n.jpg"
+         alt="Santa Fe Happy Steak" class="hdr-logo-img">
+  </div>
+  <div style="width:1px;height:22px;background:var(--bd)"></div>
+  <div class="hdr-divider" id="hdrDivider" style="display:none"></div>
+  <div class="hdr-branch" id="hdrBranch" style="display:none">
+    <div class="hdr-branch-name" id="hdrBranchName"></div>
+    <div class="hdr-branch-dm" id="hdrBranchDm"></div>
+  </div>
+  <div class="hdr-actions" id="hdrActions" style="display:none">
+    <button class="btn btn-sm btn-outline" onclick="showHistory()">📊 ประวัติ</button>
+    <button class="btn btn-sm btn-outline" onclick="doLogout()">ออก</button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════
+     SCREEN: LOGIN
+════════════════════════════════════════ -->
+<div id="sLogin" class="screen active">
+<div class="login-bg">
+<div class="login-card">
+
+  <!-- Logo -->
+  <div class="login-logo-wrap">
+    <img src="536282464_1192954076197758_7560981869126705598_n.jpg"
+         alt="Santa Fe Happy Steak" class="login-logo-img">
+  </div>
+
+  <h1 class="login-title">เข้าสู่ระบบ</h1>
+  <p class="login-sub">กรอกรหัสสาขา 4 หลักของคุณ</p>
+
+  <div class="login-otp" id="loginOtp">
+    <input class="login-otp-box" id="lc0" type="tel" maxlength="1" inputmode="numeric"
+      autocomplete="off" placeholder="·"
+      oninput="onOtpInput(0,this)" onkeydown="onOtpKey(0,this,event)" onpaste="onOtpPaste(event)">
+    <input class="login-otp-box" id="lc1" type="tel" maxlength="1" inputmode="numeric"
+      autocomplete="off" placeholder="·"
+      oninput="onOtpInput(1,this)" onkeydown="onOtpKey(1,this,event)">
+    <input class="login-otp-box" id="lc2" type="tel" maxlength="1" inputmode="numeric"
+      autocomplete="off" placeholder="·"
+      oninput="onOtpInput(2,this)" onkeydown="onOtpKey(2,this,event)">
+    <input class="login-otp-box" id="lc3" type="tel" maxlength="1" inputmode="numeric"
+      autocomplete="off" placeholder="·"
+      oninput="onOtpInput(3,this)" onkeydown="onOtpKey(3,this,event)">
+  </div>
+
+  <div id="loginPrev" class="login-preview idle">
+    <span class="login-preview-ico" id="loginIco"></span>
+    <div class="login-preview-txt">
+      <div class="login-preview-branch" id="loginBranch"></div>
+      <div class="login-preview-dm" id="loginDmTxt"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-brand btn-lg" id="loginBtn" onclick="doLogin()" disabled>
+    เข้าสู่ระบบ →
+  </button>
+  <p style="margin-top:14px;font-size:12px;color:#94a3b8">ระบบส่งยอดขาย Santa Fe v2.0</p>
+</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN: FORM
+════════════════════════════════════════ -->
+<div id="sForm" class="screen">
+<div class="form-wrap">
+
+  <!-- ส่วนที่ 1: ข้อมูลการส่ง -->
+  <div class="card">
+    <div class="card-hdr">📋 ข้อมูลการส่ง</div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div class="field">
+          <label>วันที่ *</label>
+          <input id="submit_date" type="date">
+        </div>
+        <div class="field">
+          <label>รอบเวลา *</label>
+          <select id="submit_time_slot" onchange="onSlotChange()">
+            <option value="">-- เลือกรอบ --</option>
+            <option value="16.00">16.00</option>
+            <option value="สิ้นวัน">สิ้นวัน</option>
+          </select>
+        </div>
+        <div class="field field-name">
+          <label>ชื่อผู้ส่งข้อมูล *</label>
+          <input id="submitter_name" type="text" placeholder="ชื่อ-นามสกุล">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ส่วนที่ 2: ยอดขาย -->
+  <div class="card">
+    <div class="card-hdr">💰 ยอดขาย (Sale)</div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field"><label>Plan Sale</label><input id="plan_sale" type="text" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label>Actual Sale</label><input id="actual_sale" type="text" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label>Dine In</label><input id="sale_dine_in" type="text" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label>Take Away</label><input id="sale_take_away" type="text" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label>Grab</label><input id="sale_grab" type="text" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label>Lineman</label><input id="sale_lineman" type="text" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label>Shopee Food</label><input id="sale_shopeefood" type="text" inputmode="decimal" placeholder="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ส่วนที่ 3: จำนวน Trans -->
+  <div class="card">
+    <div class="card-hdr">🧾 จำนวน Trans</div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field"><label>Total Trans</label><input id="total_trans" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Dine In</label><input id="trans_dine_in" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Take Away</label><input id="trans_take_away" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Grab</label><input id="trans_grab" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Lineman</label><input id="trans_lineman" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label>Shopee Food</label><input id="trans_shopeefood" type="text" inputmode="numeric" placeholder="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ส่วนที่ 4: Customer & Labour -->
+  <div class="card">
+    <div class="card-hdr">👥 Customer & Labour</div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field">
+          <label>Customer Count</label>
+          <input id="customer" type="text" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Labour (Hour)</label>
+          <input id="labour_hour" type="text" inputmode="decimal" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Labour (Baht)</label>
+          <input id="labour_baht" type="text" inputmode="decimal" placeholder="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<!-- Sticky submit button -->
+<div class="form-sticky-btn">
+  <button class="btn btn-brand btn-lg" onclick="reviewAndSubmit()">
+    ✓ ตรวจสอบ & ส่งข้อมูล
+  </button>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN: HISTORY
+════════════════════════════════════════ -->
+<div id="sHistory" class="screen">
+<div class="hist-wrap">
+  <div class="hist-hdr">
+    <h2>📊 ประวัติ 30 วันล่าสุด</h2>
+    <button class="btn btn-sm btn-outline" onclick="showForm()">← ส่งยอด</button>
+    <button class="btn btn-sm btn-brand" onclick="loadHistory()">🔄 รีเฟรช</button>
+  </div>
+
+  <!-- Desktop: table -->
+  <div class="hist-table-wrap" id="histTableWrap">
+    <div id="histTableContent" style="padding:40px;text-align:center">
+      <div class="spinner"></div>
+      <p style="margin-top:12px;color:#94a3b8;font-size:14px">กำลังโหลด...</p>
+    </div>
+  </div>
+
+  <!-- Mobile: cards -->
+  <div class="hist-cards" id="histCardsContent">
+    <div style="text-align:center;padding:40px">
+      <div class="spinner"></div>
+      <p style="margin-top:12px;color:#94a3b8;font-size:14px">กำลังโหลด...</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MODAL: REVIEW
+════════════════════════════════════════ -->
+<div id="mReview" class="modal-bg">
+<div class="modal">
+  <div class="modal-hdr">
+    <h3>📋 ตรวจสอบก่อนส่ง</h3>
+    <button class="modal-close" onclick="closeM('mReview')">×</button>
+  </div>
+  <div class="modal-body" id="reviewBody"></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeM('mReview')">แก้ไข</button>
+    <button class="btn btn-brand" id="confirmBtn" onclick="confirmSubmit()">ยืนยันส่ง ✓</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MODAL: EDIT
+════════════════════════════════════════ -->
+<div id="mEdit" class="modal-bg">
+<div class="modal">
+  <div class="modal-hdr">
+    <h3>✏️ แก้ไขข้อมูล</h3>
+    <button class="modal-close" onclick="closeM('mEdit')">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="edit-banner" id="editBanner"></div>
+    <div class="field-grid" id="editGrid"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeM('mEdit')">ยกเลิก</button>
+    <button class="btn btn-brand" onclick="confirmEdit()">บันทึกการแก้ไข ✓</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MODAL: ALERT
+════════════════════════════════════════ -->
+<div id="mAlert" class="modal-bg">
+<div class="modal modal-sm">
+  <div class="alert-ico" id="alertIco"></div>
+  <div class="alert-title" id="alertTitle"></div>
+  <div class="alert-msg" id="alertMsg"></div>
+  <div class="alert-actions">
+    <button class="btn btn-brand" id="alertOk">ตกลง</button>
+  </div>
+</div>
+</div>
+
+<!-- iframe bridge for GAS API -->
+<iframe id="apiBridge" name="apiBridge" style="display:none"
+  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+/* ════════════════════════════════════════════
+   CONFIG — แก้ WEB_APP_URL หลัง deploy ใหม่
+════════════════════════════════════════════ */
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzG9r0gnu6Pg64Upo3dbYOnZ-jWcJ0RzLgbad1cyR32SRqTc14P33a76tjtFcf4SQHjsw/exec";
+
+/* ────────────────────────────────────────
+   BRANCH → DM MAP (ล็อกอัตโนมัติ)
+   key = รหัสสาขา 4 หลัก
+   dm  = ชื่อผู้จัดการเขต (ตรงกับ Sheet)
+──────────────────────────────────────── */
+const BRANCH_DM_MAP = {
+  "5001":{"branch":"5001 แฟชั่น ไอส์แลนด์",                      "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5002":{"branch":"5002 ซีคอนสแควร์ ศรีนครินทร์",               "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5003":{"branch":"5003 เดอะมอลล์ ท่าพระ",                       "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5004":{"branch":"5004 เซ็นทรัล รัตนาธิเบศร์",                  "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5005":{"branch":"5005 เดอะมอลล์ บางกะปิ",                      "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5007":{"branch":"5007 เซ็นทรัลพลาซา พระราม 2",                 "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5010":{"branch":"5010 แพชชั่น ระยอง",                           "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5011":{"branch":"5011 เดอะมอลล์ งามวงศ์วาน",                   "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5012":{"branch":"5012 โลตัส บางพลี",                            "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5013":{"branch":"5013 แหลมทอง บางแสน",                          "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5014":{"branch":"5014 บิ๊กซี พัทยากลาง",                        "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5015":{"branch":"5015 แปซิฟิกพาร์ค ศรีราชา",                   "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5016":{"branch":"5016 อิมพีเรียลเวิลด์ สำโรง",                 "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5017":{"branch":"5017 ซีคอน บางแค",                             "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5018":{"branch":"5018 เซ็นทรัล รามอินทรา",                     "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5019":{"branch":"5019 เทอร์มินัล 21 อโศก",                     "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5021":{"branch":"5021 เซ็นทรัล ปิ่นเกล้า",                     "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5023":{"branch":"5023 บิ๊กซี พัทยาใต้",                         "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5024":{"branch":"5024 เดอะมอลล์ บางแค",                         "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5026":{"branch":"5026 IT หลักสี่",                               "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5027":{"branch":"5027 เซ็นทรัล แจ้งวัฒนะ",                     "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5028":{"branch":"5028 โลตัส ปทุมธานี",                          "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5030":{"branch":"5030 เพลินนารี่ มอลล์",                        "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5031":{"branch":"5031 เซ็นทรัล ศาลายา",                         "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5033":{"branch":"5033 โลตัส แจ้งวัฒนะ",                         "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5034":{"branch":"5034 โลตัส ศาลายา",                            "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5035":{"branch":"5035 เซ็นทรัลพัทยา บีช",                      "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5036":{"branch":"5036 โลตัส บางปะกอก",                          "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5038":{"branch":"5038 เซ็นทรัล ระยอง",                          "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5039":{"branch":"5039 เซ็นทรัล ชลบุรี",                         "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5040":{"branch":"5040 เซ็นทรัล Westgate",                       "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5041":{"branch":"5041 เซ็นทรัล พระราม3",                        "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5042":{"branch":"5042 ฟิวเจอร์ปาร์ค รังสิต",                   "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5044":{"branch":"5044 โลตัส ระยอง",                             "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5045":{"branch":"5045 Promenade",                                "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5046":{"branch":"5046 โลตัส บางกะปิ",                           "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5047":{"branch":"5047 เซ็นทรัล East ville",                     "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5049":{"branch":"5049 โลตัส ชลบุรี",                            "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5050":{"branch":"5050 บิ๊กซี บางพลี",                           "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5052":{"branch":"5052 โลตัส นวนคร",                             "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5054":{"branch":"5054 บิ๊กซี บางใหญ่",                          "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5055":{"branch":"5055 โลตัส สุขาภิบาล 3",                       "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5057":{"branch":"5057 โลตัส รังสิต",                            "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5061":{"branch":"5061 บิ๊กซี สัตหีบ",                           "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5062":{"branch":"5062 โรบินสัน ชลบุรี",                         "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5063":{"branch":"5063 โลตัส พนัสนิคม",                          "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5064":{"branch":"5064 เทอร์มินอล พัทยา",                        "dm":"ศุกร์แสง วัฒนาฟุ้งเจริญ (พี่หยี)"},
+  "5065":{"branch":"5065 เกตเวย์ เอกมัย",                          "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5066":{"branch":"5066 เกตเวย์ บางซื่อ",                         "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5068":{"branch":"5068 คอสโม บาร์ซา",                            "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5069":{"branch":"5069 โลตัส พัฒนาการ",                          "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5070":{"branch":"5070 พันทิพย์ งามวงศ์วาน",                     "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5071":{"branch":"5071 โลตัส จรัญสนิทวงศ์",                      "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5072":{"branch":"5072 โลตัส สุขาภิบาล 1",                       "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5073":{"branch":"5073 โลตัส ลาดพร้าว",                          "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5074":{"branch":"5074 บิ๊กซี พระราม 4",                         "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5076":{"branch":"5076 บิ๊กซี ติวานนท์",                         "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5077":{"branch":"5077 เทอมินัล โคราช",                          "dm":"ณธวรรท ศิริเมธานณ (พี่บิ๊ก)"},
+  "5078":{"branch":"5078 เดอะมอลล์ โคราช",                         "dm":"ณธวรรท ศิริเมธานณ (พี่บิ๊ก)"},
+  "5079":{"branch":"5079 เซ็นทรัล โคราช",                          "dm":"ณธวรรท ศิริเมธานณ (พี่บิ๊ก)"},
+  "5080":{"branch":"5080 โลตัส แกลง ระยอง",                        "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5081":{"branch":"5081 โลตัส ติวานนท์",                          "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5082":{"branch":"5082 มาเก็ตเพลส วงศ์สว่างเซ็นเตอร์",          "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"},
+  "5084":{"branch":"5084 เทอมินัล 21 พระราม 3",                    "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5085":{"branch":"5085 ICS ไอคอนสยาม",                           "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5087":{"branch":"5087 ศูนย์การประชุมแห่งชาติสิริกิติ์",        "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5088":{"branch":"5088 สยาม สแควร์",                             "dm":"นิรุต เจริญศิลป์ (พี่รุต)"},
+  "5089":{"branch":"5089 FAB Avenue",                               "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5090":{"branch":"5090 S Oasis",                                  "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5091":{"branch":"5091 ปตท.เกษรนวมินทร์",                        "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5504":{"branch":"5504 โลตัสวังหิน",                             "dm":"อนุรักษ์ สอนภักดี (พี่เอ็ม)"},
+  "5505":{"branch":"5505 โลตัสเลียบคลองสอง",                       "dm":"นพชัย จันทร์รุ่ง (พี่นพ)"},
+  "5508":{"branch":"5508 รพ.วชิระพยาบาล",                          "dm":"พัทธดนย์ วัฒนายุทธ (พี่ปิ๊ก)"},
+  "5509":{"branch":"5509 โลตัส นครอินทร์",                         "dm":"สีวิกา สังข์ด้วง (พี่เจี๊ยบ)"}
+};
+
+const NUM_FIELDS = [
+  "plan_sale","actual_sale","sale_dine_in","sale_take_away","sale_grab","sale_lineman","sale_shopeefood",
+  "total_trans","trans_dine_in","trans_take_away","trans_grab","trans_lineman","trans_shopeefood",
+  "customer","labour_hour","labour_baht"
+];
+
+const LS_CODE = "sf2_code";
+const LS_NAME = "sf2_name";
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let S = { code:"", branch:"", dm:"" };
+let _pendingPayload = null;
+let _editRow = null;
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+(function init() {
+  const savedCode = localStorage.getItem(LS_CODE);
+  if (savedCode && BRANCH_DM_MAP[savedCode]) {
+    const info = BRANCH_DM_MAP[savedCode];
+    S = { code: savedCode, branch: info.branch, dm: info.dm };
+    enterApp();
+  }
+  document.getElementById("submit_date").value = todayStr();
+  const savedName = localStorage.getItem(LS_NAME);
+  if (savedName) document.getElementById("submitter_name").value = savedName;
+})();
+
+/* ════════════════════════════════════════════
+   LOGIN — OTP 4 boxes
+════════════════════════════════════════════ */
+function getLoginCode() {
+  return [0,1,2,3].map(i => document.getElementById("lc"+i).value).join("");
+}
+
+function onOtpInput(idx, el) {
+  el.value = el.value.replace(/\D/g,"").slice(-1);
+  el.classList.toggle("filled", el.value !== "");
+  if (el.value && idx < 3) document.getElementById("lc"+(idx+1)).focus();
+  checkOtpCode();
+}
+
+function onOtpKey(idx, el, e) {
+  if (e.key === "Backspace" && !el.value && idx > 0) {
+    const prev = document.getElementById("lc"+(idx-1));
+    prev.value = ""; prev.classList.remove("filled"); prev.focus();
+    checkOtpCode();
+  }
+  if (e.key === "Enter") doLogin();
+}
+
+function onOtpPaste(e) {
+  e.preventDefault();
+  const digits = (e.clipboardData.getData("text") || "").replace(/\D/g,"").slice(0,4);
+  digits.split("").forEach((d,i) => {
+    const el = document.getElementById("lc"+i);
+    if (el) { el.value = d; el.classList.add("filled"); }
+  });
+  const last = document.getElementById("lc"+(Math.min(digits.length,3)));
+  if (last) last.focus();
+  checkOtpCode();
+}
+
+function checkOtpCode() {
+  const code = getLoginCode();
+  const prev = document.getElementById("loginPrev");
+  const btn  = document.getElementById("loginBtn");
+
+  if (code.length < 4) {
+    prev.className = "login-preview idle";
+    btn.disabled = true;
+    return;
+  }
+  const info = BRANCH_DM_MAP[code];
+  if (info) {
+    prev.className = "login-preview ok";
+    document.getElementById("loginIco").textContent = "✅";
+    document.getElementById("loginBranch").textContent = info.branch;
+    document.getElementById("loginDmTxt").textContent = "BZM: " + info.dm;
+    btn.disabled = false;
+  } else {
+    prev.className = "login-preview err";
+    document.getElementById("loginIco").textContent = "❌";
+    document.getElementById("loginBranch").textContent = "ไม่พบรหัสสาขา " + code;
+    document.getElementById("loginDmTxt").textContent = "กรุณาตรวจสอบอีกครั้ง";
+    btn.disabled = true;
+  }
+}
+
+function doLogin() {
+  const code = getLoginCode();
+  const info = BRANCH_DM_MAP[code];
+  if (!info) { showAlert("❌", "รหัสไม่ถูกต้อง", "ไม่พบรหัสสาขา " + code); return; }
+  S = { code: code, branch: info.branch, dm: info.dm };
+  localStorage.setItem(LS_CODE, code);
+  enterApp();
+}
+
+function doLogout() {
+  localStorage.removeItem(LS_CODE);
+  S = { code:"", branch:"", dm:"" };
+  [0,1,2,3].forEach(i => {
+    const el = document.getElementById("lc"+i);
+    if (el) { el.value = ""; el.classList.remove("filled"); }
+  });
+  document.getElementById("loginPrev").className = "login-preview idle";
+  document.getElementById("loginBtn").disabled = true;
+  document.getElementById("appHdr").style.display = "none";
+  showScreen("sLogin");
+}
+
+/* ════════════════════════════════════════════
+   SCREENS
+════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function enterApp() {
+  // Show header
+  const hdr = document.getElementById("appHdr");
+  hdr.style.display = "flex";
+  document.getElementById("hdrDivider").style.display = "";
+  document.getElementById("hdrBranch").style.display = "";
+  document.getElementById("hdrActions").style.display = "";
+  document.getElementById("hdrBranchName").textContent = S.branch;
+  document.getElementById("hdrBranchDm").textContent = "BZM: " + S.dm;
+  // Fix login screen: hide header there
+  document.getElementById("submit_date").value = todayStr();
+  const savedName = localStorage.getItem(LS_NAME);
+  if (savedName) document.getElementById("submitter_name").value = savedName;
+  showScreen("sForm");
+}
+
+function showForm() {
+  document.getElementById("submit_date").value = todayStr();
+  showScreen("sForm");
+}
+
+function showHistory() {
+  showScreen("sHistory");
+  loadHistory();
+}
+
+/* ════════════════════════════════════════════
+   SLOT CHANGE → lock/unlock fields for 16.00
+════════════════════════════════════════════ */
+// ช่องที่ lock สำหรับรอบ 16.00 (ไม่รวม plan_sale / actual_sale)
+const LOCK_1600 = [
+  "sale_dine_in","sale_take_away","sale_grab","sale_lineman","sale_shopeefood",
+  "total_trans","trans_dine_in","trans_take_away","trans_grab","trans_lineman","trans_shopeefood",
+  "customer","labour_hour","labour_baht"
+];
+
+function onSlotChange() {
+  const slot = document.getElementById("submit_time_slot").value;
+  const is1600 = slot === "16.00";
+  const isEod  = slot === "สิ้นวัน";
+
+  // lock/unlock ช่อง 16.00
+  LOCK_1600.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = is1600;
+    if (is1600) el.value = "";
+  });
+
+  // plan_sale label: บอก optional เมื่อเป็น สิ้นวัน
+  const planLabel = document.getElementById("plan_sale")?.closest(".field")?.querySelector("label");
+  if (planLabel) planLabel.textContent = isEod ? "Plan Sale (ไม่บังคับ)" : "Plan Sale";
+}
+
+/* ════════════════════════════════════════════
+   FORM → REVIEW → SUBMIT
+════════════════════════════════════════════ */
+function reviewAndSubmit() {
+  const name = document.getElementById("submitter_name").value.trim();
+  const date = document.getElementById("submit_date").value;
+  const slot = document.getElementById("submit_time_slot").value;
+
+  if (!name || !date || !slot) {
+    const miss = [];
+    if (!name) miss.push("ชื่อผู้ส่ง");
+    if (!date) miss.push("วันที่");
+    if (!slot) miss.push("รอบเวลา");
+    showAlert("⚠️", "กรอกข้อมูลไม่ครบ", "กรุณากรอก: " + miss.join(", "));
+    return;
+  }
+
+  // ── Validation — เก็บทุก error ก่อน โชว์ popup เดียว ──
+  const isEod = slot === "สิ้นวัน";
+  const errs = [];
+
+  // Actual Sale บังคับทุกรอบ
+  if (numVal("actual_sale") <= 0)
+    errs.push("Actual Sale: ยังไม่ได้ระบุยอดขาย");
+
+  // Plan Sale บังคับเฉพาะ 16.00
+  if (!isEod && numVal("plan_sale") <= 0)
+    errs.push("Plan Sale: ยังไม่ได้ระบุยอดเป้า");
+
+  // ผลรวม Sale ย่อย ต้องเท่ากับ Actual Sale
+  const saleSub = numVal("sale_dine_in") + numVal("sale_take_away") +
+                  numVal("sale_grab") + numVal("sale_lineman") + numVal("sale_shopeefood");
+  if (saleSub > 0 && Math.round(saleSub * 100) !== Math.round(numVal("actual_sale") * 100))
+    errs.push("ยอดขาย: ผลรวมช่องย่อยไม่เท่ากับ Actual Sale");
+
+  // ผลรวม Trans ย่อย ต้องเท่ากับ Total Trans
+  const transSub = numVal("trans_dine_in") + numVal("trans_take_away") +
+                   numVal("trans_grab") + numVal("trans_lineman") + numVal("trans_shopeefood");
+  if (transSub > 0 && Math.round(transSub * 100) !== Math.round(numVal("total_trans") * 100))
+    errs.push("Trans: ผลรวมช่องย่อยไม่เท่ากับ Total Trans");
+
+  // Sale-Trans cross-pairing
+  [["sale_dine_in","trans_dine_in","Dine In"],
+   ["sale_take_away","trans_take_away","Take Away"],
+   ["sale_grab","trans_grab","Grab"],
+   ["sale_lineman","trans_lineman","Lineman"],
+   ["sale_shopeefood","trans_shopeefood","Shopee Food"]
+  ].forEach(([s,t,lbl]) => {
+    if (numVal(s) > 0 && numVal(t) <= 0)
+      errs.push(lbl + ": มี Sale แต่ยังไม่มี Trans");
+  });
+
+  // Labour Hour < Baht (สิ้นวัน)
+  if (isEod) {
+    const lh = numVal("labour_hour"), lb = numVal("labour_baht");
+    if ((lh > 0 || lb > 0) && lh >= lb)
+      errs.push("Labour: Hour ต้องน้อยกว่า Baht");
+  }
+
+  if (errs.length > 0) {
+    showAlert("⚠️", "พบข้อผิดพลาด " + errs.length + " รายการ",
+      errs.map(e => "• " + e).join("\n"));
+    return;
+  }
+
+  localStorage.setItem(LS_NAME, name);
+
+  const p = {
+    mode: "submit",
+    submitter_name:   name,
+    district_manager: S.dm,
+    branch:           S.branch,
+    branch_code:      S.code,
+    submit_date:      date,
+    submit_time_slot: slot
+  };
+  NUM_FIELDS.forEach(id => { p[id] = numVal(id); });
+  _pendingPayload = p;
+
+  // Build review HTML
+  function rvRow(lbl, val) {
+    return `<div class="rv-row"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
+  }
+  function rvHi(lbl, val) {
+    return `<div class="rv-row rv-hi"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
+  }
+  function rvSec(title) {
+    return `<div class="rv-sec">${title}</div>`;
+  }
+
+  let html = "";
+  html += rvSec("สาขา & BZM");
+  html += rvRow("สาขา", S.branch);
+  html += rvRow("BZM", S.dm);
+  html += rvSec("ข้อมูลการส่ง");
+  html += rvRow("ชื่อผู้ส่ง", name);
+  html += rvRow("วันที่", date);
+  html += rvRow("รอบเวลา", slot);
+  html += rvSec("ยอดขาย");
+  html += rvRow("Plan Sale", fmt(p.plan_sale));
+  html += rvHi("Actual Sale", fmt(p.actual_sale));
+  const pct = p.plan_sale > 0 ? (p.actual_sale / p.plan_sale * 100).toFixed(1) + "%" : "-";
+  const pctColor = p.plan_sale > 0 ? (p.actual_sale >= p.plan_sale ? "#15803d" : "#dc2626") : "#64748b";
+  html += `<div class="rv-row"><span class="rv-lbl">% ของ Plan</span><span class="rv-val" style="color:${pctColor}">${pct}</span></div>`;
+  html += rvRow("Dine In", fmt(p.sale_dine_in));
+  html += rvRow("Take Away", fmt(p.sale_take_away));
+  html += rvRow("Grab", fmt(p.sale_grab));
+  html += rvRow("Lineman", fmt(p.sale_lineman));
+  html += rvRow("Shopee Food", fmt(p.sale_shopeefood));
+  html += rvSec("Trans");
+  html += rvHi("Total Trans", fmt(p.total_trans));
+  html += rvRow("Dine In", fmt(p.trans_dine_in));
+  html += rvRow("Take Away", fmt(p.trans_take_away));
+  html += rvRow("Grab", fmt(p.trans_grab));
+  html += rvRow("Lineman", fmt(p.trans_lineman));
+  html += rvRow("Shopee Food", fmt(p.trans_shopeefood));
+  html += rvSec("Customer & Labour");
+  html += rvRow("Customer", fmt(p.customer));
+  if (slot === "สิ้นวัน") {
+    html += rvRow("Labour Hour", fmt(p.labour_hour));
+    html += rvRow("Labour Baht", fmt(p.labour_baht));
+  }
+
+  document.getElementById("reviewBody").innerHTML = html;
+  document.getElementById("confirmBtn").disabled = false;
+  document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
+  openM("mReview");
+}
+
+function confirmSubmit() {
+  if (!_pendingPayload) return;
+  const btn = document.getElementById("confirmBtn");
+  btn.disabled = true; btn.textContent = "⏳ กำลังส่ง...";
+
+  apiCall(_pendingPayload, function(res) {
+    btn.disabled = false; btn.textContent = "ยืนยันส่ง ✓";
+    closeM("mReview");
+
+    if (!res) {
+      showAlert("❌", "ไม่ได้รับการตอบกลับ", "ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
+      return;
+    }
+    if (res.ok) {
+      showAlert("✅", "ส่งข้อมูลสำเร็จ!",
+        `${S.branch}\nวันที่ ${_pendingPayload.submit_date}  รอบ ${_pendingPayload.submit_time_slot}`);
+      _pendingPayload = null;
+      clearForm();
+    } else if (res.code === "BUSY_PEAK") {
+      showAlert("⏳", "ระบบยุ่ง", res.userMessage || "กรุณารอสักครู่แล้วลองใหม่");
+    } else if (res.duplicated) {
+      const d = res.duplicate || {};
+      showAlert("⚠️", "ข้อมูลซ้ำ",
+        `มีข้อมูลของสาขานี้แล้ว\nวันที่ ${d.submit_date || "-"}  รอบ ${d.submit_time_slot || "-"}\nผู้ส่ง: ${d.submitter_name || "-"}`);
+    } else {
+      showAlert("❌", "ส่งไม่สำเร็จ", res.userMessage || res.error || "เกิดข้อผิดพลาด");
+    }
+  });
+}
+
+function clearForm() {
+  NUM_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ""; el.disabled = false; }
+  });
+  document.getElementById("submit_time_slot").value = "";
+  document.getElementById("submit_date").value = todayStr();
+  const planLabel = document.getElementById("plan_sale")?.closest(".field")?.querySelector("label");
+  if (planLabel) planLabel.textContent = "Plan Sale";
+}
+
+/* ════════════════════════════════════════════
+   HISTORY
+════════════════════════════════════════════ */
+function loadHistory() {
+  const loading = `<div style="padding:48px;text-align:center"><div class="spinner"></div><p style="margin-top:14px;color:#94a3b8;font-size:14px">กำลังโหลด...</p></div>`;
+  document.getElementById("histTableContent").innerHTML = loading;
+  document.getElementById("histCardsContent").innerHTML = loading;
+
+  apiCall({ mode:"history", branch_code: S.code, days: 30 }, function(res) {
+    if (!res || !res.ok) {
+      const errMsg = `<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">${res ? (res.error || "โหลดข้อมูลไม่สำเร็จ") : "ไม่ได้รับการตอบกลับ"}</div></div>`;
+      document.getElementById("histTableContent").innerHTML = errMsg;
+      document.getElementById("histCardsContent").innerHTML = errMsg;
+      return;
+    }
+    renderHistory(res.rows || []);
+  });
+}
+
+function renderHistory(rows) {
+  if (!rows.length) {
+    const empty = `<div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">ไม่พบข้อมูลใน 30 วันที่ผ่านมา</div></div>`;
+    document.getElementById("histTableContent").innerHTML = empty;
+    document.getElementById("histCardsContent").innerHTML = empty;
+    return;
+  }
+
+  // ── TABLE (desktop) ──────────────────────
+  let tbl = `<table><thead><tr>
+    <th>วันที่</th><th>รอบ</th><th>ผู้ส่ง</th>
+    <th style="text-align:right">Plan</th>
+    <th style="text-align:right">Actual</th>
+    <th style="text-align:right">%</th>
+    <th style="text-align:right">Trans</th>
+    <th style="text-align:right">Customer</th>
+    <th style="text-align:right">Labour ฿</th>
+    <th></th>
+  </tr></thead><tbody>`;
+
+  // ── CARDS (mobile) ───────────────────────
+  let cards = "";
+
+  rows.forEach(r => {
+    const plan   = parseFloat(r.plan_sale)   || 0;
+    const actual = parseFloat(r.actual_sale) || 0;
+    const pct    = plan > 0 ? (actual / plan * 100).toFixed(1) : null;
+    const pctTxt = pct !== null ? pct + "%" : "-";
+    const pctCls = pct !== null ? (actual >= plan ? "pct-ok" : "pct-low") : "";
+    const isEod  = r.submit_time_slot === "สิ้นวัน";
+    const editCnt = parseInt(r.edit_count) || 0;
+
+    const slotBadge = isEod
+      ? '<span class="badge badge-green">สิ้นวัน</span>'
+      : '<span class="badge badge-blue">16.00</span>';
+    const editBadge = editCnt > 0 ? `<span class="badge badge-amber">แก้ไข×${editCnt}</span>` : "";
+    const editBtn = `<button class="btn btn-sm"
+      style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa"
+      onclick="openEdit(${JSON.stringify(r).replace(/"/g,"&quot;")})">✏️ แก้ไข</button>`;
+
+    // Table row
+    tbl += `<tr>
+      <td>${r.submit_date || "-"}</td>
+      <td>${slotBadge}${editBadge}</td>
+      <td>${r.submitter_name || "-"}</td>
+      <td style="text-align:right">${fmt(plan)}</td>
+      <td style="text-align:right">${fmt(actual)}</td>
+      <td style="text-align:right" class="${pctCls}">${pctTxt}</td>
+      <td style="text-align:right">${fmt(r.total_trans)}</td>
+      <td style="text-align:right">${fmt(r.customer)}</td>
+      <td style="text-align:right">${isEod ? fmt(r.labour_baht) : "-"}</td>
+      <td>${editBtn}</td>
+    </tr>`;
+
+    // Card
+    cards += `<div class="hist-card">
+      <div class="hist-card-top">
+        <div class="hist-card-date">${r.submit_date || "-"}</div>
+        ${slotBadge}${editBadge}
+      </div>
+      <div class="hist-card-row"><span class="hist-card-lbl">ผู้ส่ง</span><span class="hist-card-val">${r.submitter_name || "-"}</span></div>
+      <div class="hist-card-row">
+        <span class="hist-card-lbl">Plan / Actual</span>
+        <span class="hist-card-val">${fmt(plan)} / ${fmt(actual)}</span>
+      </div>
+      <div class="hist-card-row">
+        <span class="hist-card-lbl">% ของ Plan</span>
+        <span class="hist-card-val ${pctCls}">${pctTxt}</span>
+      </div>
+      <div class="hist-card-row"><span class="hist-card-lbl">Trans / Customer</span><span class="hist-card-val">${fmt(r.total_trans)} / ${fmt(r.customer)}</span></div>
+      ${isEod ? `<div class="hist-card-row"><span class="hist-card-lbl">Labour (฿)</span><span class="hist-card-val">${fmt(r.labour_baht)}</span></div>` : ""}
+      <div class="hist-card-actions">${editBtn}</div>
+    </div>`;
+  });
+
+  tbl += "</tbody></table>";
+  document.getElementById("histTableContent").innerHTML = tbl;
+  document.getElementById("histCardsContent").innerHTML = cards;
+}
+
+/* ════════════════════════════════════════════
+   EDIT
+════════════════════════════════════════════ */
+function openEdit(row) {
+  _editRow = row;
+  const editCnt = parseInt(row.edit_count) || 0;
+  const isEod   = row.submit_time_slot === "สิ้นวัน";
+
+  document.getElementById("editBanner").innerHTML =
+    `<strong>📅 ${row.submit_date}  รอบ ${row.submit_time_slot}</strong><br>` +
+    `ส่งครั้งแรกโดย: <strong>${row.submitter_name || "-"}</strong>` +
+    (editCnt > 0 ? `&ensp;|&ensp;แก้ไขแล้ว <strong>${editCnt} ครั้ง</strong>` : "");
+
+  const fields = [
+    { id:"e_submitter", label:"ชื่อผู้ส่ง *",   val: row.submitter_name || "", num: false, full: true },
+    { id:"e_plan",      label:"Plan Sale",        val: row.plan_sale    || 0, num:true },
+    { id:"e_actual",    label:"Actual Sale",      val: row.actual_sale  || 0, num:true },
+    { id:"e_din_s",     label:"Sale Dine In",     val: row.sale_dine_in || 0, num:true },
+    { id:"e_ta_s",      label:"Sale Take Away",   val: row.sale_take_away||0, num:true },
+    { id:"e_grab_s",    label:"Sale Grab",        val: row.sale_grab    || 0, num:true },
+    { id:"e_line_s",    label:"Sale Lineman",     val: row.sale_lineman || 0, num:true },
+    { id:"e_shp_s",     label:"Sale Shopee",      val: row.sale_shopeefood||0,num:true },
+    { id:"e_trans",     label:"Total Trans",      val: row.total_trans  || 0, num:true },
+    { id:"e_din_t",     label:"Trans Dine In",    val: row.trans_dine_in|| 0, num:true },
+    { id:"e_ta_t",      label:"Trans Take Away",  val: row.trans_take_away||0,num:true },
+    { id:"e_grab_t",    label:"Trans Grab",       val: row.trans_grab   || 0, num:true },
+    { id:"e_line_t",    label:"Trans Lineman",    val: row.trans_lineman|| 0, num:true },
+    { id:"e_shp_t",     label:"Trans Shopee",     val: row.trans_shopeefood||0,num:true },
+    { id:"e_cust",      label:"Customer",         val: row.customer     || 0, num:true },
+    { id:"e_lhour",     label:"Labour Hour" + (!isEod?" (ไม่ใช้)":""), val: row.labour_hour||0, num:true, dis:!isEod },
+    { id:"e_lbaht",     label:"Labour Baht" + (!isEod?" (ไม่ใช้)":""), val: row.labour_baht||0, num:true, dis:!isEod }
+  ];
+
+  let gridHtml = "";
+  fields.forEach(f => {
+    const col = f.full ? "grid-column:1/-1" : "";
+    const dis  = f.dis ? "disabled style='opacity:.45'" : "";
+    const inp  = f.num
+      ? `<input id="${f.id}" type="text" inputmode="decimal" value="${f.val}" ${dis}>`
+      : `<input id="${f.id}" type="text" value="${escHtml(String(f.val))}">`;
+    gridHtml += `<div class="field" style="${col}"><label>${f.label}</label>${inp}</div>`;
+  });
+
+  document.getElementById("editGrid").innerHTML = gridHtml;
+  openM("mEdit");
+}
+
+function confirmEdit() {
+  if (!_editRow) return;
+  const submitter = document.getElementById("e_submitter").value.trim();
+  if (!submitter) { showAlert("⚠️", "กรอกข้อมูลไม่ครบ", "กรุณากรอกชื่อผู้ส่ง"); return; }
+
+  const isEod = (_editRow.submit_time_slot === "สิ้นวัน");
+  const lh = isEod ? eNum("e_lhour") : 0;
+  const lb = isEod ? eNum("e_lbaht") : 0;
+  if (isEod && lh >= lb) {
+    showAlert("⚠️", "เงื่อนไขไม่ผ่าน", "Labour Hour ต้องน้อยกว่า Labour Baht");
+    return;
+  }
+
+  const payload = {
+    mode:"edit", _row: _editRow._row,
+    branch_code: S.code, submitter_name: submitter,
+    district_manager: S.dm, branch: S.branch,
+    submit_date: _editRow.submit_date,
+    submit_time_slot: _editRow.submit_time_slot,
+    plan_sale:      eNum("e_plan"),   actual_sale:      eNum("e_actual"),
+    sale_dine_in:   eNum("e_din_s"),  sale_take_away:   eNum("e_ta_s"),
+    sale_grab:      eNum("e_grab_s"), sale_lineman:     eNum("e_line_s"),
+    sale_shopeefood:eNum("e_shp_s"),
+    total_trans:    eNum("e_trans"),  trans_dine_in:    eNum("e_din_t"),
+    trans_take_away:eNum("e_ta_t"),   trans_grab:       eNum("e_grab_t"),
+    trans_lineman:  eNum("e_line_t"), trans_shopeefood: eNum("e_shp_t"),
+    customer:       eNum("e_cust"),   labour_hour: lh,  labour_baht: lb
+  };
+
+  closeM("mEdit");
+  showAlert("⏳", "กำลังบันทึก...", "กรุณารอสักครู่");
+
+  apiCall(payload, function(res) {
+    closeM("mAlert");
+    if (!res) { showAlert("❌", "ไม่ได้รับการตอบกลับ", "กรุณาลองใหม่"); return; }
+    if (res.ok && res.edited) {
+      showAlert("✅", "บันทึกสำเร็จ!",
+        `แก้ไขข้อมูลครั้งที่ ${res.editCount} เรียบร้อยแล้ว`, loadHistory);
+      _editRow = null;
+    } else {
+      showAlert("❌", "บันทึกไม่สำเร็จ", res.userMessage || res.error || "เกิดข้อผิดพลาด");
+    }
+  });
+}
+
+/* ════════════════════════════════════════════
+   API CALL (iframe bridge — รองรับ CORS ของ GAS)
+════════════════════════════════════════════ */
+const _cbs = {};
+let _seq = 0;
+
+window.addEventListener("message", function(ev) {
+  const d = ev.data;
+  if (!d || d.source !== "santafe-sales-api") return;
+  const cb = _cbs[d.reqId];
+  if (cb) { delete _cbs[d.reqId]; cb(d.payload); }
+});
+
+function apiCall(params, cb) {
+  const id = "q" + (++_seq) + "_" + Date.now();
+  _cbs[id] = cb;
+
+  const f = document.createElement("form");
+  f.method = "POST"; f.action = WEB_APP_URL; f.target = "apiBridge";
+  f.style.display = "none";
+  const add = (k, v) => {
+    const i = document.createElement("input");
+    i.type = "hidden"; i.name = k; i.value = String(v ?? "");
+    f.appendChild(i);
+  };
+  add("_transport", "iframe"); add("_reqId", id);
+  Object.keys(params).forEach(k => add(k, params[k]));
+  document.body.appendChild(f);
+  f.submit();
+  setTimeout(() => { try { document.body.removeChild(f); } catch(_){} }, 1500);
+
+  // 15s timeout
+  setTimeout(() => { if (_cbs[id]) { delete _cbs[id]; cb(null); } }, 15000);
+}
+
+/* ════════════════════════════════════════════
+   MODAL HELPERS
+════════════════════════════════════════════ */
+function openM(id)  { document.getElementById(id).classList.add("open"); }
+function closeM(id) { document.getElementById(id).classList.remove("open"); }
+
+let _alertCb = null;
+function showAlert(ico, title, msg, okCb) {
+  document.getElementById("alertIco").textContent = ico;
+  document.getElementById("alertTitle").textContent = title;
+  document.getElementById("alertMsg").textContent = msg;
+  _alertCb = okCb || null;
+  document.getElementById("alertOk").onclick = function() {
+    closeM("mAlert");
+    if (_alertCb) { const fn = _alertCb; _alertCb = null; fn(); }
+  };
+  openM("mAlert");
+}
+
+// Close modal on backdrop click
+document.querySelectorAll(".modal-bg").forEach(bg => {
+  bg.addEventListener("click", function(e) {
+    if (e.target === bg) closeM(bg.id);
+  });
+});
+
+/* ════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════ */
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function numVal(id) {
+  return parseFloat((document.getElementById(id)||{}).value?.replace(/,/g,"") || "0") || 0;
+}
+function eNum(id) {
+  const el = document.getElementById(id);
+  if (!el || el.disabled) return 0;
+  return parseFloat(el.value?.replace(/,/g,"") || "0") || 0;
+}
+function fmt(n) {
+  const v = parseFloat(n) || 0;
+  return v.toLocaleString("th-TH", { maximumFractionDigits: 2 });
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>
