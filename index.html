@@ -202,8 +202,9 @@ body {
   font-size: 16px; font-family: inherit; outline: none;
   color: var(--txt); background: #fff;
   transition: border-color .2s, box-shadow .2s;
-  min-height: 44px;
+  min-height: 44px; width: 100%;
 }
+.field { min-width: 0; }
 .field input:focus, .field select:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(242,108,28,.1);
@@ -338,8 +339,10 @@ tbody tr:hover td { background: #fffbf7; }
 }
 @media (max-width: 600px) {
   .plan-summary { grid-template-columns: 1fr 1fr; }
+  .plan-sum-card:first-child { grid-column: 1 / -1; }
   .plan-grid-hdr, .plan-row { grid-template-columns: 36px 88px 1fr 44px; font-size: 12px; }
   .plan-wrap { padding-bottom: 80px; }
+  .plan-month-nav { order: 10; width: 100%; justify-content: center; margin-top: 4px; }
 }
 
 /* ─────────────────────────────────────────
@@ -446,8 +449,9 @@ tbody tr:hover td { background: #fffbf7; }
   .hdr-branch-name { font-size: 13px; }
   .card-body { padding: 14px; }
   .hist-hdr h2 { font-size: 16px; }
-  /* ซ่อนโลโก้และ divider บน mobile ให้ชื่อสาขาไม่ตกกรอบ */
-  .hdr-logo, .hdr-sep { display: none; }
+  /* ซ่อนโลโก้, divider และ sep บน mobile ให้ชื่อสาขาไม่ตกกรอบ */
+  .hdr-logo, .hdr-sep, .hdr-divider { display: none !important; }
+  .hdr-branch { padding-left: 4px; }
 }
 @media (max-width: 380px) {
   .login-code-inp { font-size: 26px; letter-spacing: 7px; }
@@ -455,6 +459,13 @@ tbody tr:hover td { background: #fffbf7; }
 }
 @media (min-width: 641px) and (max-width: 900px) {
   .field-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 641px) {
+  .field input, .field select { font-size: 17px; padding: 12px 15px; min-height: 50px; }
+  .field label { font-size: 13px; }
+  .card-body { padding: 22px; }
+  .form-wrap { padding-bottom: 72px; }
+  .plan-wrap { max-width: 640px; }
 }
 </style>
 </head>
@@ -641,15 +652,15 @@ tbody tr:hover td { background: #fffbf7; }
   <!-- Summary cards -->
   <div class="plan-summary">
     <div class="plan-sum-card">
-      <div class="plan-sum-lbl">วันที่มีแผน</div>
-      <div class="plan-sum-val" id="planSumDays">—</div>
-    </div>
-    <div class="plan-sum-card">
-      <div class="plan-sum-lbl">Plan รวมเดือน</div>
+      <div class="plan-sum-lbl">Plan Sale รวมเดือน</div>
       <div class="plan-sum-val" id="planSumTotal">—</div>
     </div>
     <div class="plan-sum-card">
-      <div class="plan-sum-lbl">Plan เฉลี่ย/วัน</div>
+      <div class="plan-sum-lbl">วันที่มี Plan Sale</div>
+      <div class="plan-sum-val" id="planSumDays">—</div>
+    </div>
+    <div class="plan-sum-card">
+      <div class="plan-sum-lbl">Plan Sale เฉลี่ยต่อวัน</div>
       <div class="plan-sum-val" id="planSumAvg">—</div>
     </div>
   </div>
@@ -1303,7 +1314,7 @@ function onPlanInput(el) {
 function updatePlanSummary(total, days) {
   document.getElementById("planSumDays").textContent  = days + " วัน";
   document.getElementById("planSumTotal").textContent = days > 0 ? fmt(total) : "—";
-  document.getElementById("planSumAvg").textContent   = days > 0 ? fmt(Math.round(total / days)) : "—";
+  document.getElementById("planSumAvg").textContent   = days > 0 ? fmt(total / days) : "—";
 }
 
 function savePlanMonth() {
@@ -1623,6 +1634,26 @@ function fmt(n) {
 function escHtml(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+
+/* ════════════════════════════════════════════
+   INPUT VALIDATORS
+════════════════════════════════════════════ */
+function onDecInput(el) {
+  let v = el.value.replace(/[^\d.]/g, "");
+  const dot = v.indexOf(".");
+  if (dot !== -1) v = v.slice(0, dot + 1) + v.slice(dot + 1).replace(/\./g, "").slice(0, 2);
+  el.value = v;
+}
+function onIntInput(el) {
+  el.value = el.value.replace(/[^\d]/g, "");
+}
+
+(function attachInputValidators() {
+  const DEC = ["plan_sale","actual_sale","sale_dine_in","sale_take_away","sale_grab","sale_lineman","sale_shopeefood","labour_hour","labour_baht"];
+  const INT = ["total_trans","trans_dine_in","trans_take_away","trans_grab","trans_lineman","trans_shopeefood","customer"];
+  DEC.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener("input", () => onDecInput(el)); });
+  INT.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener("input", () => onIntInput(el)); });
+})();
 </script>
 </body>
 </html>
