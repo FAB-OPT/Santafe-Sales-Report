@@ -93,6 +93,14 @@ function apiDispatch_(p) {
     return apiHandleEdit_(p);
   }
 
+  // ★ v2.1: Plan Sale
+  if (mode === "savePlan") {
+    return apiHandleSavePlan_(p);
+  }
+  if (mode === "getPlan") {
+    return apiHandleGetPlan_(p);
+  }
+
   return { ok: true, version: API_VERSION, message: "OK" };
 }
 
@@ -866,4 +874,102 @@ function apiHtmlBridgeOut_(obj, reqId) {
   return HtmlService
     .createHtmlOutput(html)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/* =========================
+   ★ v2.1: savePlan
+   บันทึก/อัปเดต Plan Sale รายวันของสาขา
+   p: { branch_code, entries: JSON string of [{date, plan_sale}] }
+========================= */
+function apiHandleSavePlan_(p) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(API_LOCK_WAIT_MS);
+    const ss = SpreadsheetApp.openById(API_SPREADSHEET_ID);
+    let sheet = ss.getSheetByName("PLAN");
+    if (!sheet) {
+      sheet = ss.insertSheet("PLAN");
+      sheet.appendRow(["branch_code", "date", "plan_sale", "updated_at", "updated_by"]);
+      sheet.setFrozenRows(1);
+    }
+
+    const branchCode = String(p.branch_code || "").trim();
+    const updater    = String(p.submitter_name || "").trim();
+    let entries = [];
+    try { entries = JSON.parse(p.entries || "[]"); } catch (_) {}
+    if (!entries.length) return { ok: false, error: "No entries" };
+
+    const allData = sheet.getDataRange().getValues();
+    const hdr     = allData[0];
+    const COL     = { bc: hdr.indexOf("branch_code"), dt: hdr.indexOf("date"),
+                      ps: hdr.indexOf("plan_sale"), ua: hdr.indexOf("updated_at"),
+                      ub: hdr.indexOf("updated_by") };
+
+    // Build lookup: "branchCode|date" → row number (1-indexed)
+    const lookup = {};
+    for (let i = 1; i < allData.length; i++) {
+      const key = String(allData[i][COL.bc]) + "|" + String(allData[i][COL.dt]);
+      lookup[key] = i + 1;
+    }
+
+    const now = nowTh_();
+    entries.forEach(function(entry) {
+      const date     = String(entry.date || "").trim();
+      const planSale = parseFloat(entry.plan_sale) || 0;
+      const key      = branchCode + "|" + date;
+      if (lookup[key]) {
+        const r = lookup[key];
+        sheet.getRange(r, COL.ps + 1).setValue(planSale);
+        sheet.getRange(r, COL.ua + 1).setValue(now);
+        sheet.getRange(r, COL.ub + 1).setValue(updater);
+      } else {
+        sheet.appendRow([branchCode, date, planSale, now, updater]);
+      }
+    });
+
+    SpreadsheetApp.flush();
+    LockService.getScriptLock().releaseLock();
+    return { ok: true, saved: entries.length };
+  } catch (err) {
+    try { lock.releaseLock(); } catch (_) {}
+    return { ok: false, error: String(err.message) };
+  }
+}
+
+/* =========================
+   ★ v2.1: getPlan
+   ดึง Plan Sale ทั้งเดือน/วันของสาขา
+   p: { branch_code, year_month } เช่น year_month="2026-05"
+   หรือ  { branch_code, date }  สำหรับดึงวันเดียว
+========================= */
+function apiHandleGetPlan_(p) {
+  try {
+    const branchCode = String(p.branch_code || "").trim();
+    const yearMonth  = String(p.year_month  || "").trim();
+    const singleDate = String(p.date        || "").trim();
+
+    const ss    = SpreadsheetApp.openById(API_SPREADSHEET_ID);
+    const sheet = ss.getSheetByName("PLAN");
+    if (!sheet) return { ok: true, rows: [] };
+
+    const allData = sheet.getDataRange().getValues();
+    const hdr     = allData[0];
+    const COL     = { bc: hdr.indexOf("branch_code"), dt: hdr.indexOf("date"),
+                      ps: hdr.indexOf("plan_sale") };
+
+    const rows = [];
+    for (let i = 1; i < allData.length; i++) {
+      const bc   = String(allData[i][COL.bc]).trim();
+      const date = String(allData[i][COL.dt]).trim();
+      if (bc !== branchCode) continue;
+      if (singleDate && date !== singleDate) continue;
+      if (yearMonth  && !date.startsWith(yearMonth)) continue;
+      rows.push({ date: date, plan_sale: allData[i][COL.ps] });
+    }
+
+    return { ok: true, rows: rows };
+  } catch (err) {
+    return { ok: false, error: String(err.message) };
+  }
+}
 }

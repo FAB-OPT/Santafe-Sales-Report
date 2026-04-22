@@ -271,6 +271,73 @@ tbody tr:hover td { background: #fffbf7; }
 }
 
 /* ─────────────────────────────────────────
+   PLAN SALE SCREEN
+───────────────────────────────────────── */
+.plan-wrap { max-width: 860px; margin: 0 auto; padding: 16px 12px 32px; }
+.plan-month-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.plan-month-bar h2 { font-size: 18px; font-weight: 800; flex: 1; }
+.plan-month-nav {
+  display: flex; align-items: center; gap: 6px;
+}
+.plan-month-lbl {
+  font-size: 15px; font-weight: 700; min-width: 110px; text-align: center;
+}
+.plan-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 14px;
+}
+.plan-sum-card {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 14px 16px;
+  text-align: center;
+}
+.plan-sum-lbl { font-size: 12px; color: var(--txt2); font-weight: 600; margin-bottom: 4px; }
+.plan-sum-val { font-size: 18px; font-weight: 800; color: var(--brand); }
+.plan-grid {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.plan-grid-hdr {
+  background: linear-gradient(135deg, var(--brand), #f88c3a);
+  color: #fff; padding: 11px 16px;
+  display: grid; grid-template-columns: 80px 90px 1fr 80px;
+  font-size: 12px; font-weight: 700; gap: 8px;
+}
+.plan-row {
+  display: grid; grid-template-columns: 80px 90px 1fr 80px;
+  gap: 8px; align-items: center;
+  padding: 7px 16px; border-bottom: 1px solid #f1f5f9;
+}
+.plan-row:last-child { border-bottom: none; }
+.plan-row.today { background: #fff8f2; }
+.plan-row.past  { opacity: .55; }
+.plan-day-num { font-size: 14px; font-weight: 700; }
+.plan-day-name { font-size: 12px; color: var(--txt2); }
+.plan-day-name.holiday { color: var(--red); font-weight: 700; }
+.plan-inp {
+  padding: 7px 10px; border: 1.5px solid var(--bd); border-radius: 8px;
+  font-size: 14px; font-family: inherit; outline: none; text-align: right;
+  transition: border-color .2s; width: 100%;
+}
+.plan-inp:focus { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(242,108,28,.1); }
+.plan-inp.has-val { border-color: #86efac; background: #f0fdf4; }
+.plan-saved-lbl { font-size: 11px; color: var(--green); font-weight: 600; }
+.plan-sticky-btn {
+  position: sticky; bottom: 0; background: var(--surface);
+  border-top: 1px solid var(--bd); padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex; gap: 10px; justify-content: center;
+}
+@media (max-width: 600px) {
+  .plan-summary { grid-template-columns: 1fr 1fr; }
+  .plan-grid-hdr, .plan-row { grid-template-columns: 48px 68px 1fr 72px; font-size: 12px; }
+  .plan-wrap { padding-bottom: 80px; }
+}
+
+/* ─────────────────────────────────────────
    BADGES
 ───────────────────────────────────────── */
 .badge {
@@ -401,6 +468,7 @@ tbody tr:hover td { background: #fffbf7; }
     <div class="hdr-branch-dm" id="hdrBranchDm"></div>
   </div>
   <div class="hdr-actions" id="hdrActions" style="display:none">
+    <button class="btn btn-sm btn-outline" onclick="showPlan()">📅 Plan</button>
     <button class="btn btn-sm btn-outline" onclick="showHistory()">📊 ประวัติ</button>
     <button class="btn btn-sm btn-outline" onclick="doLogout()">ออก</button>
   </div>
@@ -466,7 +534,7 @@ tbody tr:hover td { background: #fffbf7; }
       <div class="info-grid">
         <div class="field">
           <label>วันที่ *</label>
-          <input id="submit_date" type="date">
+          <input id="submit_date" type="date" onchange="fetchPlanForDate(this.value)">
         </div>
         <div class="field">
           <label>รอบเวลา *</label>
@@ -543,6 +611,55 @@ tbody tr:hover td { background: #fffbf7; }
   <button class="btn btn-brand btn-lg" onclick="reviewAndSubmit()">
     ✓ ตรวจสอบ & ส่งข้อมูล
   </button>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN: PLAN SALE
+════════════════════════════════════════ -->
+<div id="sPlan" class="screen">
+<div class="plan-wrap">
+
+  <!-- Month nav -->
+  <div class="plan-month-bar">
+    <h2>📅 Plan Sale รายเดือน</h2>
+    <div class="plan-month-nav">
+      <button class="btn btn-sm btn-outline" onclick="planPrevMonth()">‹</button>
+      <span class="plan-month-lbl" id="planMonthLbl"></span>
+      <button class="btn btn-sm btn-outline" onclick="planNextMonth()">›</button>
+    </div>
+    <button class="btn btn-sm btn-outline" onclick="showForm()">← กลับ</button>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="plan-summary">
+    <div class="plan-sum-card">
+      <div class="plan-sum-lbl">วันที่มีแผน</div>
+      <div class="plan-sum-val" id="planSumDays">—</div>
+    </div>
+    <div class="plan-sum-card">
+      <div class="plan-sum-lbl">Plan รวมเดือน</div>
+      <div class="plan-sum-val" id="planSumTotal">—</div>
+    </div>
+    <div class="plan-sum-card">
+      <div class="plan-sum-lbl">Plan เฉลี่ย/วัน</div>
+      <div class="plan-sum-val" id="planSumAvg">—</div>
+    </div>
+  </div>
+
+  <!-- Day grid -->
+  <div class="plan-grid">
+    <div class="plan-grid-hdr">
+      <span>วันที่</span><span>วัน</span><span>Plan Sale (บาท)</span><span style="text-align:right">สถานะ</span>
+    </div>
+    <div id="planGridBody"></div>
+  </div>
+
+</div>
+<!-- Sticky save -->
+<div class="plan-sticky-btn">
+  <button class="btn btn-outline" onclick="showForm()">← กลับ</button>
+  <button class="btn btn-brand" style="min-width:180px" onclick="savePlanMonth()">💾 บันทึก Plan เดือนนี้</button>
 </div>
 </div>
 
@@ -1071,6 +1188,154 @@ function clearForm() {
 /* ════════════════════════════════════════════
    HISTORY
 ════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════
+   PLAN SALE
+════════════════════════════════════════════ */
+let _planYear  = 0;
+let _planMonth = 0; // 0-based
+let _planData  = {}; // key: "YYYY-MM-DD" → plan_sale
+
+const TH_MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+                   "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const TH_DAYS   = ["อา","จ","อ","พ","พฤ","ศ","ส"];
+
+function showPlan() {
+  const now = new Date();
+  _planYear  = now.getFullYear();
+  _planMonth = now.getMonth();
+  showScreen("sPlan");
+  loadPlanMonth();
+}
+
+function planPrevMonth() {
+  _planMonth--;
+  if (_planMonth < 0) { _planMonth = 11; _planYear--; }
+  loadPlanMonth();
+}
+function planNextMonth() {
+  _planMonth++;
+  if (_planMonth > 11) { _planMonth = 0; _planYear++; }
+  loadPlanMonth();
+}
+
+function loadPlanMonth() {
+  const ym = _planYear + "-" + String(_planMonth + 1).padStart(2, "0");
+  document.getElementById("planMonthLbl").textContent = TH_MONTHS[_planMonth] + " " + (_planYear + 543);
+  document.getElementById("planGridBody").innerHTML =
+    `<div style="padding:32px;text-align:center"><div class="spinner"></div></div>`;
+
+  apiCall({ mode: "getPlan", branch_code: S.code, year_month: ym }, function(res) {
+    _planData = {};
+    if (res && res.ok && res.rows) {
+      res.rows.forEach(r => { _planData[r.date] = parseFloat(r.plan_sale) || 0; });
+    }
+    renderPlanGrid();
+  });
+}
+
+function renderPlanGrid() {
+  const today   = todayStr();
+  const daysInMonth = new Date(_planYear, _planMonth + 1, 0).getDate();
+  const ym      = _planYear + "-" + String(_planMonth + 1).padStart(2, "0");
+
+  let html = "";
+  let totalPlan = 0, daysWithPlan = 0;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = ym + "-" + String(d).padStart(2, "0");
+    const dow     = new Date(_planYear, _planMonth, d).getDay();
+    const isPast  = dateStr < today;
+    const isToday = dateStr === today;
+    const isWeekend = dow === 0 || dow === 6;
+    const val     = _planData[dateStr] || 0;
+    const hasVal  = val > 0;
+
+    if (hasVal) { totalPlan += val; daysWithPlan++; }
+
+    const rowCls  = isToday ? "plan-row today" : (isPast ? "plan-row past" : "plan-row");
+    const dayCls  = isWeekend ? "plan-day-name holiday" : "plan-day-name";
+    const inpCls  = hasVal ? "plan-inp has-val" : "plan-inp";
+    const savedLbl = hasVal ? `<span class="plan-saved-lbl">✓</span>` : `<span></span>`;
+
+    html += `<div class="${rowCls}">
+      <span class="plan-day-num">${d}</span>
+      <span class="${dayCls}">${TH_DAYS[dow]}</span>
+      <input class="${inpCls}" id="pd_${dateStr}" type="text" inputmode="decimal"
+        placeholder="0" value="${hasVal ? val : ""}"
+        oninput="onPlanInput(this)" data-date="${dateStr}">
+      ${savedLbl}
+    </div>`;
+  }
+
+  document.getElementById("planGridBody").innerHTML = html;
+  updatePlanSummary(totalPlan, daysWithPlan);
+}
+
+function onPlanInput(el) {
+  const v = parseFloat(el.value.replace(/,/g,"")) || 0;
+  el.classList.toggle("has-val", v > 0);
+  // recalculate summary from all inputs
+  let total = 0, days = 0;
+  document.querySelectorAll(".plan-inp").forEach(inp => {
+    const n = parseFloat(inp.value.replace(/,/g,"")) || 0;
+    if (n > 0) { total += n; days++; }
+  });
+  updatePlanSummary(total, days);
+}
+
+function updatePlanSummary(total, days) {
+  document.getElementById("planSumDays").textContent  = days + " วัน";
+  document.getElementById("planSumTotal").textContent = days > 0 ? fmt(total) : "—";
+  document.getElementById("planSumAvg").textContent   = days > 0 ? fmt(Math.round(total / days)) : "—";
+}
+
+function savePlanMonth() {
+  const entries = [];
+  document.querySelectorAll(".plan-inp").forEach(inp => {
+    const date = inp.dataset.date;
+    const val  = parseFloat(inp.value.replace(/,/g,"")) || 0;
+    entries.push({ date: date, plan_sale: val });
+  });
+  if (!entries.length) return;
+
+  const btn = document.querySelector(".plan-sticky-btn .btn-brand");
+  btn.disabled = true; btn.textContent = "⏳ กำลังบันทึก...";
+
+  apiCall({
+    mode: "savePlan",
+    branch_code: S.code,
+    submitter_name: localStorage.getItem(LS_NAME) || S.branch,
+    entries: JSON.stringify(entries)
+  }, function(res) {
+    btn.disabled = false; btn.textContent = "💾 บันทึก Plan เดือนนี้";
+    if (res && res.ok) {
+      // update local cache
+      document.querySelectorAll(".plan-inp").forEach(inp => {
+        const v = parseFloat(inp.value.replace(/,/g,"")) || 0;
+        _planData[inp.dataset.date] = v;
+      });
+      showAlert("✅", "บันทึกสำเร็จ", "บันทึก Plan " + res.saved + " วันเรียบร้อยแล้ว");
+    } else {
+      showAlert("❌", "บันทึกไม่สำเร็จ", (res && res.error) || "กรุณาลองใหม่");
+    }
+  });
+}
+
+// Auto-fill Plan Sale จากฐานข้อมูล เมื่อเลือกวันที่
+function fetchPlanForDate(dateStr) {
+  if (!dateStr || !S.code) return;
+  apiCall({ mode: "getPlan", branch_code: S.code, date: dateStr }, function(res) {
+    if (!res || !res.ok || !res.rows || !res.rows.length) return;
+    const plan = parseFloat(res.rows[0].plan_sale) || 0;
+    if (plan <= 0) return;
+    const el = document.getElementById("plan_sale");
+    if (el && !el.disabled && (!el.value || el.value === "0" || el.value === "")) {
+      el.value = plan;
+    }
+  });
+}
+
 function loadHistory() {
   const loading = `<div style="padding:48px;text-align:center"><div class="spinner"></div><p style="margin-top:14px;color:#94a3b8;font-size:14px">กำลังโหลด...</p></div>`;
   document.getElementById("histTableContent").innerHTML = loading;
