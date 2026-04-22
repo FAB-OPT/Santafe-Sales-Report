@@ -446,6 +446,8 @@ tbody tr:hover td { background: #fffbf7; }
   .hdr-branch-name { font-size: 13px; }
   .card-body { padding: 14px; }
   .hist-hdr h2 { font-size: 16px; }
+  /* ซ่อนโลโก้และ divider บน mobile ให้ชื่อสาขาไม่ตกกรอบ */
+  .hdr-logo, .hdr-sep { display: none; }
 }
 @media (max-width: 380px) {
   .login-code-inp { font-size: 26px; letter-spacing: 7px; }
@@ -466,7 +468,7 @@ tbody tr:hover td { background: #fffbf7; }
     <img src="536282464_1192954076197758_7560981869126705598_n.jpg"
          alt="Santa Fe Happy Steak" class="hdr-logo-img">
   </div>
-  <div style="width:1px;height:22px;background:var(--bd)"></div>
+  <div class="hdr-sep" style="width:1px;height:22px;background:var(--bd)"></div>
   <div class="hdr-divider" id="hdrDivider" style="display:none"></div>
   <div class="hdr-branch" id="hdrBranch" style="display:none">
     <div class="hdr-branch-name" id="hdrBranchName"></div>
