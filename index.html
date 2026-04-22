@@ -1,4 +1,4 @@
-< !doctype html>
+<!doctype html>
   <html lang="th">
 
   <head>
@@ -2038,8 +2038,8 @@
         localStorage.removeItem(LS_CODE);
         S = { code: "", branch: "", dm: "" };
         _branchOtp.fill(""); _adminOtp.fill("");
-        [0,1,2,3].forEach(i => { const e=document.getElementById("lc"+i); if(e){e.value="";e.classList.remove("filled");} });
-        [0,1,2,3,4,5].forEach(i => { const e=document.getElementById("ac"+i); if(e){e.value="";e.classList.remove("filled");} });
+        [0, 1, 2, 3].forEach(i => { const e = document.getElementById("lc" + i); if (e) { e.value = ""; e.classList.remove("filled"); } });
+        [0, 1, 2, 3, 4, 5].forEach(i => { const e = document.getElementById("ac" + i); if (e) { e.value = ""; e.classList.remove("filled"); } });
         document.getElementById("loginBtn").disabled = true;
         document.getElementById("appHdr").style.display = "none";
         document.getElementById("mobNav").classList.remove("visible");
@@ -2738,5 +2738,11 @@
       })();
     </script>
   </body>
+
+
+
+
+
+
 
   </html>
