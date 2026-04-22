@@ -439,6 +439,39 @@ tbody tr:hover td { background: #fffbf7; }
 .empty-txt { font-size: 15px; }
 
 /* ─────────────────────────────────────────
+   MOBILE BOTTOM TAB BAR
+───────────────────────────────────────── */
+.mob-nav { display: none; }
+@media (max-width: 640px) {
+  .mob-nav.visible {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 110;
+    background: var(--surface);
+    border-top: 1.5px solid var(--bd);
+    box-shadow: 0 -2px 12px rgba(0,0,0,.09);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mob-nav-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    padding: 8px 2px 10px; background: none; border: none;
+    cursor: pointer; color: var(--txt2); font-family: inherit;
+    -webkit-tap-highlight-color: transparent; transition: color .15s;
+  }
+  .mob-nav-btn.active { color: var(--brand); }
+  .mob-nav-btn-danger { color: var(--red) !important; }
+  .mob-nav-ico { font-size: 20px; line-height: 1; }
+  .mob-nav-lbl { font-size: 10px; font-weight: 700; white-space: nowrap; }
+  /* sticky buttons ขยับขึ้นเหนือ bottom nav */
+  .form-sticky-btn { bottom: 62px; }
+  .plan-sticky-btn { bottom: 62px; }
+  /* padding ให้ content ไม่ถูก nav บัง */
+  .form-wrap  { padding-bottom: 148px !important; }
+  .plan-wrap  { padding-bottom: 148px !important; }
+  .hist-wrap  { padding-bottom: 80px; }
+}
+
+/* ─────────────────────────────────────────
    RESPONSIVE
 ───────────────────────────────────────── */
 @media (max-width: 640px) {
@@ -451,13 +484,12 @@ tbody tr:hover td { background: #fffbf7; }
   .hdr-branch-name { font-size: 13px; }
   .card-body { padding: 14px; }
   .hist-hdr h2 { font-size: 16px; }
-  /* ซ่อนโลโก้, divider และ sep บน mobile ให้ชื่อสาขาไม่ตกกรอบ */
-  .hdr-logo, .hdr-sep, .hdr-divider { display: none !important; }
-  .hdr-branch { padding-left: 4px; flex-basis: 100%; }
-  /* header 2 แถวบน mobile */
-  .hdr { height: auto; min-height: var(--hdr-h); flex-wrap: wrap; padding: 10px 16px; gap: 6px; }
-  .hdr-actions { flex-basis: 100%; justify-content: flex-start; flex-wrap: wrap; }
-  .hdr-actions .btn { font-size: 12px; padding: 6px 10px; min-height: 30px; }
+  /* ซ่อน sep และ divider เท่านั้น (โลโก้กลับมาแล้ว) */
+  .hdr-sep, .hdr-divider { display: none !important; }
+  /* ซ่อนปุ่มบน header — ย้ายไป bottom nav แล้ว */
+  .hdr-actions { display: none !important; }
+  /* iOS date input fix */
+  input[type="date"] { -webkit-appearance: none; appearance: none; }
 }
 @media (max-width: 380px) {
   .login-code-inp { font-size: 26px; letter-spacing: 7px; }
@@ -767,6 +799,28 @@ tbody tr:hover td { background: #fffbf7; }
 </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     MOBILE BOTTOM TAB BAR
+════════════════════════════════════════ -->
+<nav class="mob-nav" id="mobNav">
+  <button class="mob-nav-btn" id="mnForm" onclick="showForm()">
+    <span class="mob-nav-ico">📋</span>
+    <span class="mob-nav-lbl">ส่งยอด</span>
+  </button>
+  <button class="mob-nav-btn" id="mnPlan" onclick="showPlan()">
+    <span class="mob-nav-ico">📅</span>
+    <span class="mob-nav-lbl">Plan Sale</span>
+  </button>
+  <button class="mob-nav-btn" id="mnHistory" onclick="showHistory()">
+    <span class="mob-nav-ico">📊</span>
+    <span class="mob-nav-lbl">ประวัติ</span>
+  </button>
+  <button class="mob-nav-btn mob-nav-btn-danger" onclick="doLogout()">
+    <span class="mob-nav-ico">🚪</span>
+    <span class="mob-nav-lbl">ออกจากระบบ</span>
+  </button>
+</nav>
+
 <!-- iframe bridge for GAS API -->
 <iframe id="apiBridge" name="apiBridge" style="display:none"
   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
@@ -973,6 +1027,7 @@ function doLogout() {
   document.getElementById("loginPrev").className = "login-preview idle";
   document.getElementById("loginBtn").disabled = true;
   document.getElementById("appHdr").style.display = "none";
+  document.getElementById("mobNav").classList.remove("visible");
   showScreen("sLogin");
 }
 
@@ -984,8 +1039,11 @@ function showScreen(id) {
   document.getElementById(id).classList.add("active");
 }
 
+function setMobTab(btnId) {
+  document.querySelectorAll(".mob-nav-btn").forEach(b => b.classList.toggle("active", b.id === btnId));
+}
+
 function enterApp() {
-  // Show header
   const hdr = document.getElementById("appHdr");
   hdr.style.display = "flex";
   document.getElementById("hdrDivider").style.display = "";
@@ -993,20 +1051,22 @@ function enterApp() {
   document.getElementById("hdrActions").style.display = "";
   document.getElementById("hdrBranchName").textContent = S.branch;
   document.getElementById("hdrBranchDm").textContent = "BZM: " + S.dm;
-  // Fix login screen: hide header there
+  document.getElementById("mobNav").classList.add("visible");
   document.getElementById("submit_date").value = todayStr();
   const savedName = localStorage.getItem(LS_NAME);
   if (savedName) document.getElementById("submitter_name").value = savedName;
-  showScreen("sForm");
+  showForm();
 }
 
 function showForm() {
   document.getElementById("submit_date").value = todayStr();
   showScreen("sForm");
+  setMobTab("mnForm");
 }
 
 function showHistory() {
   showScreen("sHistory");
+  setMobTab("mnHistory");
   loadHistory();
 }
 
@@ -1229,6 +1289,7 @@ function showPlan() {
   _planYear  = now.getFullYear();
   _planMonth = now.getMonth();
   showScreen("sPlan");
+  setMobTab("mnPlan");
   loadPlanMonth();
 }
 
