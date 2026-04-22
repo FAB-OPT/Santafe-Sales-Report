@@ -1013,9 +1013,9 @@ function reviewAndSubmit() {
   html += rvRow("Grab", fmt(p.trans_grab));
   html += rvRow("Lineman", fmt(p.trans_lineman));
   html += rvRow("Shopee Food", fmt(p.trans_shopeefood));
-  html += rvSec("Customer & Labour");
-  html += rvRow("Customer", fmt(p.customer));
   if (slot === "สิ้นวัน") {
+    html += rvSec("Customer & Labour");
+    html += rvRow("Customer", fmt(p.customer));
     html += rvRow("Labour Hour", fmt(p.labour_hour));
     html += rvRow("Labour Baht", fmt(p.labour_baht));
   }
