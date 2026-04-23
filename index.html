@@ -2105,9 +2105,11 @@
           if (is1600) el.value = "";
         });
 
-        // plan_sale label: บอก optional เมื่อเป็น สิ้นวัน
-        const planLabel = document.getElementById("plan_sale")?.closest(".field")?.querySelector("label");
-        if (planLabel) planLabel.textContent = isEod ? "Plan Sale (ไม่บังคับ)" : "Plan Sale";
+        // plan_sale: ซ่อนสำหรับ สิ้นวัน (ไม่ใช้ Plan Sale ในรอบนี้)
+        const planWrap = document.getElementById("plan_sale")?.closest(".field");
+        const planEl   = document.getElementById("plan_sale");
+        if (planWrap) planWrap.style.display = isEod ? "none" : "";
+        if (planEl)   { planEl.disabled = isEod; if (isEod) planEl.value = ""; }
       }
 
       /* ════════════════════════════════════════════
@@ -2277,8 +2279,11 @@
         });
         document.getElementById("submit_time_slot").value = "";
         document.getElementById("submit_date").value = todayStr();
-        const planLabel = document.getElementById("plan_sale")?.closest(".field")?.querySelector("label");
-        if (planLabel) planLabel.textContent = "Plan Sale";
+        // แสดง plan_sale กลับมา (reset สถานะจาก onSlotChange)
+        const planWrapR = document.getElementById("plan_sale")?.closest(".field");
+        const planElR   = document.getElementById("plan_sale");
+        if (planWrapR) planWrapR.style.display = "";
+        if (planElR)   planElR.disabled = false;
       }
 
       /* ════════════════════════════════════════════
@@ -2436,9 +2441,7 @@
           const plan = parseFloat(res.rows[0].plan_sale) || 0;
           if (plan <= 0) return;
           const el = document.getElementById("plan_sale");
-          if (el && !el.disabled && (!el.value || el.value === "0" || el.value === "")) {
-            el.value = plan;
-          }
+          if (el && !el.disabled) el.value = plan;
         });
       }
 
@@ -2553,22 +2556,22 @@
 
         const fields = [
           { id: "e_submitter", label: "ชื่อผู้ส่ง *", val: row.submitter_name || "", num: false, full: true },
-          { id: "e_plan", label: "Plan Sale", val: row.plan_sale || 0, num: true },
+          { id: "e_plan",   label: "Plan Sale",   val: row.plan_sale   || 0, num: true, dis: isEod },
           { id: "e_actual", label: "Actual Sale", val: row.actual_sale || 0, num: true },
-          { id: "e_din_s", label: "Sale Dine In", val: row.sale_dine_in || 0, num: true },
-          { id: "e_ta_s", label: "Sale Take Away", val: row.sale_take_away || 0, num: true },
-          { id: "e_grab_s", label: "Sale Grab", val: row.sale_grab || 0, num: true },
-          { id: "e_line_s", label: "Sale Lineman", val: row.sale_lineman || 0, num: true },
-          { id: "e_shp_s", label: "Sale Shopee", val: row.sale_shopeefood || 0, num: true },
-          { id: "e_trans", label: "Total Trans", val: row.total_trans || 0, num: true },
-          { id: "e_din_t", label: "Trans Dine In", val: row.trans_dine_in || 0, num: true },
-          { id: "e_ta_t", label: "Trans Take Away", val: row.trans_take_away || 0, num: true },
-          { id: "e_grab_t", label: "Trans Grab", val: row.trans_grab || 0, num: true },
-          { id: "e_line_t", label: "Trans Lineman", val: row.trans_lineman || 0, num: true },
-          { id: "e_shp_t", label: "Trans Shopee", val: row.trans_shopeefood || 0, num: true },
-          { id: "e_cust", label: "Customer", val: row.customer || 0, num: true },
-          { id: "e_lhour", label: "Labour Hour" + (!isEod ? " (ไม่ใช้)" : ""), val: row.labour_hour || 0, num: true, dis: !isEod },
-          { id: "e_lbaht", label: "Labour Baht" + (!isEod ? " (ไม่ใช้)" : ""), val: row.labour_baht || 0, num: true, dis: !isEod }
+          { id: "e_din_s",  label: "Sale Dine In",    val: row.sale_dine_in    || 0, num: true, dis: !isEod },
+          { id: "e_ta_s",   label: "Sale Take Away",  val: row.sale_take_away  || 0, num: true, dis: !isEod },
+          { id: "e_grab_s", label: "Sale Grab",       val: row.sale_grab       || 0, num: true, dis: !isEod },
+          { id: "e_line_s", label: "Sale Lineman",    val: row.sale_lineman    || 0, num: true, dis: !isEod },
+          { id: "e_shp_s",  label: "Sale Shopee",     val: row.sale_shopeefood || 0, num: true, dis: !isEod },
+          { id: "e_trans",  label: "Total Trans",     val: row.total_trans     || 0, num: true, dis: !isEod },
+          { id: "e_din_t",  label: "Trans Dine In",   val: row.trans_dine_in   || 0, num: true, dis: !isEod },
+          { id: "e_ta_t",   label: "Trans Take Away", val: row.trans_take_away || 0, num: true, dis: !isEod },
+          { id: "e_grab_t", label: "Trans Grab",      val: row.trans_grab      || 0, num: true, dis: !isEod },
+          { id: "e_line_t", label: "Trans Lineman",   val: row.trans_lineman   || 0, num: true, dis: !isEod },
+          { id: "e_shp_t",  label: "Trans Shopee",    val: row.trans_shopeefood|| 0, num: true, dis: !isEod },
+          { id: "e_cust",   label: "Customer",        val: row.customer        || 0, num: true, dis: !isEod },
+          { id: "e_lhour",  label: "Labour Hour",     val: row.labour_hour     || 0, num: true, dis: !isEod },
+          { id: "e_lbaht",  label: "Labour Baht",     val: row.labour_baht     || 0, num: true, dis: !isEod }
         ];
 
         let gridHtml = "";
