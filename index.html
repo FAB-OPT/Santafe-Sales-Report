@@ -1608,7 +1608,7 @@
           <div class="card-body">
             <div class="field-grid">
               <div class="field">
-                <label>Customer Count</label>
+                <label>Customer</label>
                 <input id="customer" type="text" inputmode="numeric" placeholder="0">
               </div>
               <div class="field">
@@ -2144,6 +2144,10 @@
         // Actual Sale บังคับทุกรอบ
         if (numVal("actual_sale") <= 0)
           errs.push("Actual Sale: ยังไม่ได้ระบุยอดขาย");
+
+        // Actual Sale > 0 → Total Trans ต้องมีค่า (เฉพาะสิ้นวัน)
+        if (isEod && numVal("actual_sale") > 0 && numVal("total_trans") <= 0)
+          errs.push("Total Trans: ถ้ามียอดขายต้องระบุจำนวน Trans ด้วย");
 
         // ผลรวม Sale ย่อย ต้องเท่ากับ Actual Sale
         const saleSub = numVal("sale_dine_in") + numVal("sale_take_away") +
