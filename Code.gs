@@ -5,7 +5,6 @@
 //         "Plan"    → ข้อมูล Plan Sale รายวัน
 // ════════════════════════════════════════════════════════════
 
-// ── Column headers ──────────────────────────────────────────
 var SALES_HDR = [
   "timestamp","submitter_name","district_manager","branch","branch_code",
   "submit_date","submit_time_slot",
@@ -33,22 +32,20 @@ function doPost(e) {
     else                          payload = { ok: false, error: "Unknown mode: " + mode };
 
     return respond(payload);
-
   } catch (err) {
     return respond({ ok: false, error: err.message });
   }
 }
 
-// ── Return JSON directly (no iframe/postMessage needed) ──────
 function respond(payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ── Lazy-init sheets ─────────────────────────────────────────
-function getSalesSheet() { return getOrCreate("Sales",  SALES_HDR); }
-function getPlanSheet()  { return getOrCreate("Plan",   PLAN_HDR);  }
+// ── Sheet helpers ────────────────────────────────────────────
+function getSalesSheet() { return getOrCreate("Sales", SALES_HDR); }
+function getPlanSheet()  { return getOrCreate("Plan",  PLAN_HDR);  }
 
 function getOrCreate(name, headers) {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
@@ -61,25 +58,41 @@ function getOrCreate(name, headers) {
   return sheet;
 }
 
+// ── Type helpers ─────────────────────────────────────────────
+// Google Sheets auto-converts "5001" → 5001 (number) and
+// "2026-04-23" → Date object. Always use these helpers when
+// reading cell values back for comparison or JSON output.
+
+function toDateStr(v) {
+  if (v instanceof Date) {
+    return Utilities.formatDate(v, "Asia/Bangkok", "yyyy-MM-dd");
+  }
+  return String(v);
+}
+
+function toNum(v) {
+  var n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
+
 // ════════════════════════════════════════════════════════════
-//  MODE: submit — บันทึกยอดขายใหม่
+//  MODE: submit
 // ════════════════════════════════════════════════════════════
 function handleSubmit(p) {
   var sheet = getSalesSheet();
   var data  = sheet.getDataRange().getValues();
 
-  // ตรวจซ้ำ (branch_code + submit_date + submit_time_slot)
   for (var i = 1; i < data.length; i++) {
     var r = data[i];
-    if (r[4] === p.branch_code &&
-        r[5] === p.submit_date &&
-        r[6] === p.submit_time_slot) {
+    if (String(r[4])    === String(p.branch_code) &&
+        toDateStr(r[5]) === String(p.submit_date) &&
+        String(r[6])    === String(p.submit_time_slot)) {
       return {
         ok: false,
         duplicate: {
-          submit_date:      r[5],
-          submit_time_slot: r[6],
-          submitter_name:   r[1]
+          submit_date:      toDateStr(r[5]),
+          submit_time_slot: String(r[6]),
+          submitter_name:   String(r[1])
         }
       };
     }
@@ -90,28 +103,26 @@ function handleSubmit(p) {
     p.submitter_name   || "",
     p.district_manager || "",
     p.branch           || "",
-    p.branch_code      || "",
+    "'" + (p.branch_code || ""),   // prefix ' ป้องกัน Sheets แปลงเป็น number
     p.submit_date      || "",
     p.submit_time_slot || "",
-    toNum(p.plan_sale),     toNum(p.actual_sale),
-    toNum(p.sale_dine_in),  toNum(p.sale_take_away),
-    toNum(p.sale_grab),     toNum(p.sale_lineman),
+    toNum(p.plan_sale),      toNum(p.actual_sale),
+    toNum(p.sale_dine_in),   toNum(p.sale_take_away),
+    toNum(p.sale_grab),      toNum(p.sale_lineman),
     toNum(p.sale_shopeefood),
-    toNum(p.total_trans),   toNum(p.trans_dine_in),
+    toNum(p.total_trans),    toNum(p.trans_dine_in),
     toNum(p.trans_take_away),toNum(p.trans_grab),
-    toNum(p.trans_lineman), toNum(p.trans_shopeefood),
-    toNum(p.customer),      toNum(p.labour_hour),
+    toNum(p.trans_lineman),  toNum(p.trans_shopeefood),
+    toNum(p.customer),       toNum(p.labour_hour),
     toNum(p.labour_baht),
-    0,   // edit_count
-    ""   // last_edited
+    0, ""
   ]);
 
   return { ok: true };
 }
 
 // ════════════════════════════════════════════════════════════
-//  MODE: getPlan — ดึง Plan Sale รายวัน
-//  params: branch_code + (year_month หรือ date)
+//  MODE: getPlan
 // ════════════════════════════════════════════════════════════
 function handleGetPlan(p) {
   var sheet = getPlanSheet();
@@ -119,14 +130,16 @@ function handleGetPlan(p) {
   var rows  = [];
 
   for (var i = 1; i < data.length; i++) {
-    var r = data[i];
-    if (r[0] !== p.branch_code) continue;
-    var dateStr = String(r[1]);
+    var r       = data[i];
+    var rowCode = String(r[0]).replace(/^'/, "");  // ลบ ' prefix ถ้ามี
+    var rowDate = toDateStr(r[1]);
+
+    if (rowCode !== String(p.branch_code)) continue;
 
     if (p.date) {
-      if (dateStr === p.date) rows.push({ date: dateStr, plan_sale: r[2] });
+      if (rowDate === String(p.date)) rows.push({ date: rowDate, plan_sale: r[2] });
     } else if (p.year_month) {
-      if (dateStr.indexOf(p.year_month) === 0) rows.push({ date: dateStr, plan_sale: r[2] });
+      if (rowDate.indexOf(String(p.year_month)) === 0) rows.push({ date: rowDate, plan_sale: r[2] });
     }
   }
 
@@ -134,8 +147,7 @@ function handleGetPlan(p) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  MODE: savePlan — บันทึก/อัปเดต Plan Sale ทั้งเดือน
-//  params: branch_code, submitter_name, entries (JSON string)
+//  MODE: savePlan
 // ════════════════════════════════════════════════════════════
 function handleSavePlan(p) {
   var sheet = getPlanSheet();
@@ -153,7 +165,9 @@ function handleSavePlan(p) {
     var found = false;
 
     for (var i = 1; i < data.length; i++) {
-      if (data[i][0] === p.branch_code && String(data[i][1]) === String(entry.date)) {
+      var rowCode = String(data[i][0]).replace(/^'/, "");
+      var rowDate = toDateStr(data[i][1]);
+      if (rowCode === String(p.branch_code) && rowDate === String(entry.date)) {
         sheet.getRange(i + 1, 3).setValue(entry.plan_sale || 0);
         sheet.getRange(i + 1, 4).setValue(p.submitter_name || "");
         sheet.getRange(i + 1, 5).setValue(now);
@@ -165,7 +179,7 @@ function handleSavePlan(p) {
     }
 
     if (!found) {
-      var newRow = [p.branch_code, entry.date, entry.plan_sale || 0, p.submitter_name || "", now];
+      var newRow = ["'" + p.branch_code, entry.date, entry.plan_sale || 0, p.submitter_name || "", now];
       sheet.appendRow(newRow);
       data.push(newRow);
       saved++;
@@ -176,28 +190,28 @@ function handleSavePlan(p) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  MODE: history — ดูประวัติ N วันล่าสุด
-//  params: branch_code, days
+//  MODE: history
 // ════════════════════════════════════════════════════════════
 function handleHistory(p) {
-  var sheet   = getSalesSheet();
-  var data    = sheet.getDataRange().getValues();
-  var days    = parseInt(p.days) || 30;
-
-  var cutoff  = new Date();
+  var sheet     = getSalesSheet();
+  var data      = sheet.getDataRange().getValues();
+  var days      = parseInt(p.days) || 30;
+  var cutoff    = new Date();
   cutoff.setDate(cutoff.getDate() - days);
-  var cutoffStr = cutoff.toISOString().slice(0, 10);
+  var cutoffStr = Utilities.formatDate(cutoff, "Asia/Bangkok", "yyyy-MM-dd");
 
   var rows = [];
 
   for (var i = 1; i < data.length; i++) {
-    var r = data[i];
-    if (r[4] !== p.branch_code) continue;
-    if (String(r[5]) < cutoffStr)  continue;
+    var r       = data[i];
+    var rowCode = String(r[4]).replace(/^'/, "");
+    var rowDate = toDateStr(r[5]);
+
+    if (rowCode !== String(p.branch_code)) continue;
+    if (rowDate < cutoffStr) continue;
     rows.push(rowToObj(r, i + 1));
   }
 
-  // เรียงวันที่ใหม่ก่อน, สิ้นวันอยู่หลัง 16.00 ในวันเดียวกัน
   rows.sort(function(a, b) {
     if (a.submit_date !== b.submit_date) return b.submit_date.localeCompare(a.submit_date);
     if (a.submit_time_slot === "สิ้นวัน") return 1;
@@ -209,8 +223,7 @@ function handleHistory(p) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  MODE: edit — แก้ไขแถวที่ระบุ
-//  params: _row, branch_code, + ทุก numeric fields
+//  MODE: edit
 // ════════════════════════════════════════════════════════════
 function handleEdit(p) {
   var sheet  = getSalesSheet();
@@ -219,21 +232,21 @@ function handleEdit(p) {
   if (!rowNum || rowNum < 2) return { ok: false, error: "Invalid row number" };
 
   var existing = sheet.getRange(rowNum, 1, 1, SALES_HDR.length).getValues()[0];
+  var rowCode  = String(existing[4]).replace(/^'/, "");
 
-  // ตรวจสิทธิ์: branch_code ต้องตรงกัน
-  if (String(existing[4]) !== String(p.branch_code)) {
+  if (rowCode !== String(p.branch_code)) {
     return { ok: false, userMessage: "ไม่สามารถแก้ไขข้อมูลสาขาอื่นได้" };
   }
 
   var editCount = (parseInt(existing[23]) || 0) + 1;
 
   sheet.getRange(rowNum, 1, 1, SALES_HDR.length).setValues([[
-    existing[0],              // timestamp เดิม
+    existing[0],
     p.submitter_name   || existing[1],
     p.district_manager || existing[2],
     p.branch           || existing[3],
-    p.branch_code      || existing[4],
-    p.submit_date      || existing[5],
+    existing[4],                         // branch_code เดิม (ไม่แตะ format)
+    existing[5],                         // submit_date เดิม
     p.submit_time_slot || existing[6],
     toNum(p.plan_sale),      toNum(p.actual_sale),
     toNum(p.sale_dine_in),   toNum(p.sale_take_away),
@@ -251,17 +264,17 @@ function handleEdit(p) {
   return { ok: true, edited: true, editCount: editCount };
 }
 
-// ── Helpers ──────────────────────────────────────────────────
+// ── Row → object (แปลง Date/number กลับเป็น string ก่อนส่ง) ─
 function rowToObj(r, rowNum) {
   return {
     _row:             rowNum,
-    timestamp:        r[0],
-    submitter_name:   r[1],
-    district_manager: r[2],
-    branch:           r[3],
-    branch_code:      r[4],
-    submit_date:      r[5],
-    submit_time_slot: r[6],
+    timestamp:        String(r[0]),
+    submitter_name:   String(r[1]),
+    district_manager: String(r[2]),
+    branch:           String(r[3]),
+    branch_code:      String(r[4]).replace(/^'/, ""),
+    submit_date:      toDateStr(r[5]),
+    submit_time_slot: String(r[6]),
     plan_sale:        r[7],
     actual_sale:      r[8],
     sale_dine_in:     r[9],
@@ -279,11 +292,6 @@ function rowToObj(r, rowNum) {
     labour_hour:      r[21],
     labour_baht:      r[22],
     edit_count:       r[23],
-    last_edited:      r[24]
+    last_edited:      String(r[24] || "")
   };
-}
-
-function toNum(v) {
-  var n = parseFloat(v);
-  return isNaN(n) ? 0 : n;
 }
