@@ -20,11 +20,9 @@ var PLAN_HDR = ["branch_code","date","plan_sale","submitter_name","updated_at"];
 
 // ── Entry point ──────────────────────────────────────────────
 function doPost(e) {
-  var reqId = "";
   try {
-    var p   = e.parameter;
-    reqId   = p._reqId || "";
-    var mode = p.mode  || "";
+    var p    = e.parameter;
+    var mode = p.mode || "";
     var payload;
 
     if      (mode === "submit")   payload = handleSubmit(p);
@@ -34,19 +32,18 @@ function doPost(e) {
     else if (mode === "edit")     payload = handleEdit(p);
     else                          payload = { ok: false, error: "Unknown mode: " + mode };
 
-    return respond(reqId, payload);
+    return respond(payload);
 
   } catch (err) {
-    return respond(reqId, { ok: false, error: err.message });
+    return respond({ ok: false, error: err.message });
   }
 }
 
-// ── Return HTML that calls postMessage back to parent ────────
-function respond(reqId, payload) {
-  var msg = JSON.stringify({ source: "santafe-sales-api", reqId: reqId, payload: payload });
-  return HtmlService.createHtmlOutput(
-    "<script>window.parent.postMessage(" + msg + ",'*');</script>"
-  );
+// ── Return JSON directly (no iframe/postMessage needed) ──────
+function respond(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // ── Lazy-init sheets ─────────────────────────────────────────

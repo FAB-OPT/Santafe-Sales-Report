@@ -1783,9 +1783,6 @@
       </button>
     </nav>
 
-    <!-- iframe bridge for GAS API -->
-    <iframe id="apiBridge" name="apiBridge" style="display:none"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
 
     <!-- ════════════════════════════════════════
      JAVASCRIPT
@@ -2634,38 +2631,21 @@
       }
 
       /* ════════════════════════════════════════════
-         API CALL (iframe bridge — รองรับ CORS ของ GAS)
+         API CALL (fetch — GAS Web App JSON)
       ════════════════════════════════════════════ */
-      const _cbs = {};
-      let _seq = 0;
-
-      window.addEventListener("message", function (ev) {
-        const d = ev.data;
-        if (!d || d.source !== "santafe-sales-api") return;
-        const cb = _cbs[d.reqId];
-        if (cb) { delete _cbs[d.reqId]; cb(d.payload); }
-      });
-
       function apiCall(params, cb) {
-        const id = "q" + (++_seq) + "_" + Date.now();
-        _cbs[id] = cb;
+        let done = false;
+        const finish = (data) => { if (!done) { done = true; cb(data); } };
 
-        const f = document.createElement("form");
-        f.method = "POST"; f.action = WEB_APP_URL; f.target = "apiBridge";
-        f.style.display = "none";
-        const add = (k, v) => {
-          const i = document.createElement("input");
-          i.type = "hidden"; i.name = k; i.value = String(v ?? "");
-          f.appendChild(i);
-        };
-        add("_transport", "iframe"); add("_reqId", id);
-        Object.keys(params).forEach(k => add(k, params[k]));
-        document.body.appendChild(f);
-        f.submit();
-        setTimeout(() => { try { document.body.removeChild(f); } catch (_) { } }, 1500);
+        setTimeout(() => finish(null), 15000);
 
-        // 15s timeout
-        setTimeout(() => { if (_cbs[id]) { delete _cbs[id]; cb(null); } }, 15000);
+        const body = new URLSearchParams();
+        Object.keys(params).forEach(k => body.append(k, String(params[k] ?? "")));
+
+        fetch(WEB_APP_URL, { method: "POST", body: body })
+          .then(r => r.text())
+          .then(text => { try { finish(JSON.parse(text)); } catch (_) { finish(null); } })
+          .catch(() => finish(null));
       }
 
       /* ════════════════════════════════════════════
