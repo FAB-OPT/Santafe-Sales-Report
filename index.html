@@ -1562,8 +1562,8 @@
           <div class="card-hdr">💰 ยอดขาย (Sale)</div>
           <div class="card-body">
             <div class="field-grid">
-              <div class="field"><label>Plan Sale</label><input id="plan_sale" type="text" inputmode="decimal"
-                  placeholder="0"></div>
+              <div class="field" style="display:none"><label>Plan Sale</label><input id="plan_sale" type="text" inputmode="decimal"
+                  placeholder="0" disabled></div>
               <div class="field"><label>Actual Sale</label><input id="actual_sale" type="text" inputmode="decimal"
                   placeholder="0"></div>
               <div class="field"><label>Dine In</label><input id="sale_dine_in" type="text" inputmode="decimal"
@@ -2369,18 +2369,14 @@
 
           const dayCls = "plan-day-name" + (isSat ? " sat" : isSun ? " sun" : "");
           const inpCls = hasVal ? "plan-inp has-val" : "plan-inp";
-          const locked = isPast;
-          const statusHtml = locked
-            ? `<span class="plan-status lock">🔒</span>`
-            : (hasVal ? `<span class="plan-status ok">✓</span>` : `<span class="plan-status"></span>`);
+          const statusHtml = hasVal ? `<span class="plan-status ok">✓</span>` : `<span class="plan-status"></span>`;
 
           html += `<div class="${rowCls}">
       <span class="plan-day-num">${d}</span>
       <span class="${dayCls}">${TH_DAYS[dow]}</span>
       <input class="${inpCls}" id="pd_${dateStr}" type="text" inputmode="decimal"
         placeholder="0" value="${hasVal ? val : ""}"
-        oninput="onPlanInput(this)" data-date="${dateStr}"
-        ${locked ? "disabled" : ""}>
+        oninput="onPlanInput(this)" data-date="${dateStr}">
       ${statusHtml}
     </div>`;
         }
@@ -2409,7 +2405,7 @@
 
       function savePlanMonth() {
         const entries = [];
-        document.querySelectorAll(".plan-inp:not(:disabled)").forEach(inp => {
+        document.querySelectorAll(".plan-inp").forEach(inp => {
           const date = inp.dataset.date;
           const val = parseFloat(inp.value.replace(/,/g, "")) || 0;
           entries.push({ date: date, plan_sale: val });
