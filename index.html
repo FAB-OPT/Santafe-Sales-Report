@@ -2112,12 +2112,10 @@
         if (planWrap) planWrap.style.display = "none";
         if (planEl)   { planEl.disabled = true; planEl.value = ""; }
 
-        // ดึง Plan Sale จาก DB เมื่อเลือกรอบ 16.00 / reset เมื่อเปลี่ยน
-        if (isEod) { _currentPlan = 0; }
-        else {
-          const d = document.getElementById("submit_date").value;
-          if (d) fetchPlanForDate(d);
-        }
+        // ดึง Plan Sale จาก DB ทุกรอบ (16.00 และสิ้นวัน)
+        const d = document.getElementById("submit_date").value;
+        if (d) fetchPlanForDate(d);
+        else _currentPlan = 0;
       }
 
       /* ════════════════════════════════════════════
@@ -2161,7 +2159,7 @@
         if (transSub > 0 && Math.round(transSub * 100) !== Math.round(numVal("total_trans") * 100))
           errs.push("Trans: ผลรวมช่องย่อยไม่เท่ากับ Total Trans");
 
-        // Sale-Trans cross-pairing
+        // Sale-Trans cross-pairing (bidirectional)
         [["sale_dine_in", "trans_dine_in", "Dine In"],
         ["sale_take_away", "trans_take_away", "Take Away"],
         ["sale_grab", "trans_grab", "Grab"],
@@ -2170,6 +2168,8 @@
         ].forEach(([s, t, lbl]) => {
           if (numVal(s) > 0 && numVal(t) <= 0)
             errs.push(lbl + ": มี Sale แต่ยังไม่มี Trans");
+          if (numVal(t) > 0 && numVal(s) <= 0)
+            errs.push(lbl + ": มี Trans แต่ยังไม่มี Sale");
         });
 
         // Labour Hour < Baht (สิ้นวัน)
@@ -2197,7 +2197,7 @@
           submit_time_slot: slot
         };
         NUM_FIELDS.forEach(id => { p[id] = numVal(id); });
-        p.plan_sale = slot !== "สิ้นวัน" ? _currentPlan : 0;
+        p.plan_sale = _currentPlan;
         _pendingPayload = p;
 
         // Build review HTML
