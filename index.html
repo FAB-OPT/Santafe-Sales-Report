@@ -2197,59 +2197,69 @@
           submit_time_slot: slot
         };
         NUM_FIELDS.forEach(id => { p[id] = numVal(id); });
-        p.plan_sale = _currentPlan;
-        _pendingPayload = p;
 
-        // Build review HTML
-        function rvRow(lbl, val) {
-          return `<div class="rv-row"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
-        }
-        function rvHi(lbl, val) {
-          return `<div class="rv-row rv-hi"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
-        }
-        function rvSec(title) {
-          return `<div class="rv-sec">${title}</div>`;
-        }
+        // fetch Plan Sale สด จาก DB ก่อนเปิด review (ไม่พึ่ง _currentPlan ที่อาจโหลดช้า)
+        const _reviewBtn = document.querySelector(".form-sticky-btn .btn-brand");
+        if (_reviewBtn) { _reviewBtn.disabled = true; _reviewBtn.textContent = "⏳ กำลังโหลด..."; }
 
-        let html = "";
-        html += rvSec("สาขา & BZM");
-        html += rvRow("สาขา", S.branch);
-        html += rvRow("BZM", S.dm);
-        html += rvSec("ข้อมูลการส่ง");
-        html += rvRow("ชื่อผู้ส่ง", name);
-        html += rvRow("วันที่", date);
-        html += rvRow("รอบเวลา", slot);
-        html += rvSec("ยอดขาย");
-        if (p.plan_sale > 0) html += rvRow("Plan Sale", fmt(p.plan_sale));
-        html += rvHi("Actual Sale", fmt(p.actual_sale));
-        const pct = p.plan_sale > 0 ? (p.actual_sale / p.plan_sale * 100).toFixed(1) + "%" : "-";
-        const pctColor = p.plan_sale > 0 ? (p.actual_sale >= p.plan_sale ? "#15803d" : "#dc2626") : "#64748b";
-        html += `<div class="rv-row"><span class="rv-lbl">% ของ Plan</span><span class="rv-val" style="color:${pctColor}">${pct}</span></div>`;
+        apiCall({ mode: "getPlan", branch_code: S.code, date: date }, function(planRes) {
+          if (_reviewBtn) { _reviewBtn.disabled = false; _reviewBtn.textContent = "✓ ตรวจสอบ & ส่งข้อมูล"; }
 
-        if (slot === "สิ้นวัน") {
-          html += rvRow("Dine In", fmt(p.sale_dine_in));
-          html += rvRow("Take Away", fmt(p.sale_take_away));
-          html += rvRow("Grab", fmt(p.sale_grab));
-          html += rvRow("Lineman", fmt(p.sale_lineman));
-          html += rvRow("Shopee Food", fmt(p.sale_shopeefood));
-          html += rvSec("Trans");
-          html += rvHi("Total Trans", fmt(p.total_trans));
-          html += rvRow("Dine In", fmt(p.trans_dine_in));
-          html += rvRow("Take Away", fmt(p.trans_take_away));
-          html += rvRow("Grab", fmt(p.trans_grab));
-          html += rvRow("Lineman", fmt(p.trans_lineman));
-          html += rvRow("Shopee Food", fmt(p.trans_shopeefood));
-          html += rvSec("Customer & Labour");
-          html += rvRow("Customer", fmt(p.customer));
-          html += rvRow("Labour Hour", fmt(p.labour_hour) + " ชม.");
-          const labPct = p.actual_sale > 0 ? " (" + (p.labour_baht / p.actual_sale * 100).toFixed(1) + "%)" : "";
-          html += rvRow("Labour Baht", fmt(p.labour_baht) + labPct);
-        }
+          p.plan_sale = (planRes && planRes.ok && planRes.rows && planRes.rows.length)
+            ? (parseFloat(planRes.rows[0].plan_sale) || 0) : 0;
+          _currentPlan = p.plan_sale;
+          _pendingPayload = p;
 
-        document.getElementById("reviewBody").innerHTML = html;
-        document.getElementById("confirmBtn").disabled = false;
-        document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
-        openM("mReview");
+          function rvRow(lbl, val) {
+            return `<div class="rv-row"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
+          }
+          function rvHi(lbl, val) {
+            return `<div class="rv-row rv-hi"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
+          }
+          function rvSec(title) {
+            return `<div class="rv-sec">${title}</div>`;
+          }
+
+          let html = "";
+          html += rvSec("สาขา & BZM");
+          html += rvRow("สาขา", S.branch);
+          html += rvRow("BZM", S.dm);
+          html += rvSec("ข้อมูลการส่ง");
+          html += rvRow("ชื่อผู้ส่ง", name);
+          html += rvRow("วันที่", date);
+          html += rvRow("รอบเวลา", slot);
+          html += rvSec("ยอดขาย");
+          if (p.plan_sale > 0) html += rvRow("Plan Sale", fmt(p.plan_sale));
+          html += rvHi("Actual Sale", fmt(p.actual_sale));
+          const pct = p.plan_sale > 0 ? (p.actual_sale / p.plan_sale * 100).toFixed(1) + "%" : "-";
+          const pctColor = p.plan_sale > 0 ? (p.actual_sale >= p.plan_sale ? "#15803d" : "#dc2626") : "#64748b";
+          html += `<div class="rv-row"><span class="rv-lbl">% ของ Plan</span><span class="rv-val" style="color:${pctColor}">${pct}</span></div>`;
+
+          if (slot === "สิ้นวัน") {
+            html += rvRow("Dine In", fmt(p.sale_dine_in));
+            html += rvRow("Take Away", fmt(p.sale_take_away));
+            html += rvRow("Grab", fmt(p.sale_grab));
+            html += rvRow("Lineman", fmt(p.sale_lineman));
+            html += rvRow("Shopee Food", fmt(p.sale_shopeefood));
+            html += rvSec("Trans");
+            html += rvHi("Total Trans", fmt(p.total_trans));
+            html += rvRow("Dine In", fmt(p.trans_dine_in));
+            html += rvRow("Take Away", fmt(p.trans_take_away));
+            html += rvRow("Grab", fmt(p.trans_grab));
+            html += rvRow("Lineman", fmt(p.trans_lineman));
+            html += rvRow("Shopee Food", fmt(p.trans_shopeefood));
+            html += rvSec("Customer & Labour");
+            html += rvRow("Customer", fmt(p.customer));
+            html += rvRow("Labour Hour", fmt(p.labour_hour) + " ชม.");
+            const labPct = p.actual_sale > 0 ? " (" + (p.labour_baht / p.actual_sale * 100).toFixed(1) + "%)" : "";
+            html += rvRow("Labour Baht", fmt(p.labour_baht) + labPct);
+          }
+
+          document.getElementById("reviewBody").innerHTML = html;
+          document.getElementById("confirmBtn").disabled = false;
+          document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
+          openM("mReview");
+        });
       }
 
       function confirmSubmit() {
@@ -2272,7 +2282,7 @@
             clearForm();
           } else if (res.code === "BUSY_PEAK") {
             showAlert("⏳", "ระบบยุ่ง", res.userMessage || "กรุณารอสักครู่แล้วลองใหม่");
-          } else if (res.duplicated) {
+          } else if (res.duplicate) {
             const d = res.duplicate || {};
             showAlert("⚠️", "ข้อมูลซ้ำ",
               `มีข้อมูลของสาขานี้แล้ว\nวันที่ ${d.submit_date || "-"}  รอบ ${d.submit_time_slot || "-"}\nผู้ส่ง: ${d.submitter_name || "-"}`);

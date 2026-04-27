@@ -134,20 +134,38 @@ function handleSubmit(p) {
   var sheet = getSalesSheet();
   var data  = sheet.getDataRange().getValues();
 
+  var has1600 = false;
   for (var i = 1; i < data.length; i++) {
     var r = data[i];
-    if (String(r[4])    === String(p.branch_code) &&
-        toDateStr(r[5]) === String(p.submit_date) &&
-        toSlotStr(r[6]) === String(p.submit_time_slot)) {
+    var rCode = String(r[4]).replace(/^'/, "");
+    var rDate = toDateStr(r[5]);
+    var rSlot = toSlotStr(r[6]);
+
+    // ตรวจ duplicate
+    if (rCode === String(p.branch_code) &&
+        rDate === String(p.submit_date) &&
+        rSlot === String(p.submit_time_slot)) {
       return {
         ok: false,
         duplicate: {
-          submit_date:      toDateStr(r[5]),
-          submit_time_slot: toSlotStr(r[6]),
+          submit_date:      rDate,
+          submit_time_slot: rSlot,
           submitter_name:   String(r[1])
         }
       };
     }
+
+    // ตรวจว่ามี 16.00 แล้ว (สำหรับ check สิ้นวัน)
+    if (rCode === String(p.branch_code) &&
+        rDate === String(p.submit_date) &&
+        rSlot === "16.00") {
+      has1600 = true;
+    }
+  }
+
+  // สิ้นวัน ต้องส่ง 16.00 ก่อน
+  if (p.submit_time_slot === "สิ้นวัน" && !has1600) {
+    return { ok: false, userMessage: "กรุณาส่งข้อมูลรอบ 16.00 ก่อนส่งรอบสิ้นวัน" };
   }
 
   sheet.appendRow([
@@ -318,9 +336,24 @@ function handleEdit(p) {
     new Date().toISOString()
   ]]);
 
-  // sync Plan Sale → Plan sheet (เฉพาะเมื่อมีค่า plan_sale)
-  if (toNum(p.plan_sale) > 0) {
-    upsertPlan(p.branch_code, toDateStr(existing[5]), toNum(p.plan_sale), p.submitter_name);
+  var newPlan    = toNum(p.plan_sale);
+  var targetDate = toDateStr(existing[5]);
+
+  if (newPlan > 0) {
+    // sync Plan Sale → Plan sheet
+    upsertPlan(p.branch_code, targetDate, newPlan, p.submitter_name);
+
+    // sync plan_sale ไปยัง row อื่นของวันเดียวกัน (รอบ 16.00 ↔ สิ้นวัน)
+    var allRows = sheet.getDataRange().getValues();
+    for (var j = 1; j < allRows.length; j++) {
+      if (j + 1 === rowNum) continue;
+      var rd     = allRows[j];
+      var rdCode = String(rd[4]).replace(/^'/, "");
+      var rdDate = toDateStr(rd[5]);
+      if (rdCode === String(p.branch_code) && rdDate === targetDate) {
+        sheet.getRange(j + 1, 8).setValue(newPlan); // col 8 = plan_sale
+      }
+    }
   }
 
   return { ok: true, edited: true, editCount: editCount };
