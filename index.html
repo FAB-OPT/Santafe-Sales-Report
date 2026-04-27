@@ -2562,7 +2562,8 @@
         document.getElementById("editBanner").innerHTML =
           `<strong>📅 ${row.submit_date}  รอบ ${row.submit_time_slot}</strong><br>` +
           `ส่งครั้งแรกโดย: <strong>${row.submitter_name || "-"}</strong>` +
-          (editCnt > 0 ? `&ensp;|&ensp;แก้ไขแล้ว <strong>${editCnt} ครั้ง</strong>` : "");
+          (editCnt > 0 ? `&ensp;|&ensp;แก้ไขแล้ว <strong>${editCnt} ครั้ง</strong>` : "") +
+          `<div style="margin-top:6px;font-size:0.78rem;color:#92400e">* แก้ไข Plan Sale ได้เฉพาะรอบ 16.00 เท่านั้น</div>`;
 
         const fields = [
           { id: "e_submitter", label: "ชื่อผู้ส่ง *", val: row.submitter_name || "", num: false, full: true },
