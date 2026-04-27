@@ -2636,19 +2636,36 @@
       /* ════════════════════════════════════════════
          API CALL — GET request (GAS doGet ไม่มี redirect, รองรับ CORS)
       ════════════════════════════════════════════ */
-      function apiCall(params, cb) {
+      function apiCall(params, cb, _retry) {
+        const maxRetry = (_retry === undefined) ? 2 : _retry;
         let done = false;
         const finish = (data) => { if (!done) { done = true; cb(data); } };
 
-        setTimeout(() => finish(null), 20000);
+        const timeoutMs = 25000 + (2 - maxRetry) * 5000; // เพิ่ม timeout ตาม retry
+        const timer = setTimeout(() => finish(null), timeoutMs);
 
         const qs = new URLSearchParams();
         Object.keys(params).forEach(k => qs.append(k, String(params[k] ?? "")));
 
         fetch(WEB_APP_URL + "?" + qs.toString())
           .then(r => r.json())
-          .then(data => finish(data))
-          .catch(() => finish(null));
+          .then(data => {
+            clearTimeout(timer);
+            // retry อัตโนมัติเมื่อ GAS lock timeout (ระบบยุ่ง)
+            if (data && data.error === "LOCK_TIMEOUT" && maxRetry > 0) {
+              setTimeout(() => apiCall(params, cb, maxRetry - 1), 3000 + Math.random() * 2000);
+              return;
+            }
+            finish(data);
+          })
+          .catch(() => {
+            clearTimeout(timer);
+            if (maxRetry > 0) {
+              setTimeout(() => apiCall(params, cb, maxRetry - 1), 3000);
+            } else {
+              finish(null);
+            }
+          });
       }
 
       /* ════════════════════════════════════════════

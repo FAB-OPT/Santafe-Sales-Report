@@ -28,18 +28,34 @@ function doPost(e) {
   return handleRequest(e);
 }
 
+var WRITE_MODES = { submit: true, edit: true, savePlan: true };
+
 function handleRequest(e) {
   try {
     var p    = e.parameter;
     var mode = p.mode || "";
     var payload;
 
-    if      (mode === "submit")   payload = handleSubmit(p);
-    else if (mode === "getPlan")  payload = handleGetPlan(p);
-    else if (mode === "savePlan") payload = handleSavePlan(p);
-    else if (mode === "history")  payload = handleHistory(p);
-    else if (mode === "edit")     payload = handleEdit(p);
-    else                          payload = { ok: false, error: "Unknown mode: " + mode };
+    if (WRITE_MODES[mode]) {
+      // ล็อก script ป้องกัน race condition ตอนหลายสาขาส่ง/แก้ไขพร้อมกัน
+      var lock = LockService.getScriptLock();
+      try {
+        lock.waitLock(12000); // รอสูงสุด 12 วินาที
+      } catch (e) {
+        return respond({ ok: false, error: "LOCK_TIMEOUT", userMessage: "ระบบยุ่งอยู่ กรุณาลองใหม่อีกครั้ง" });
+      }
+      try {
+        if      (mode === "submit")   payload = handleSubmit(p);
+        else if (mode === "savePlan") payload = handleSavePlan(p);
+        else if (mode === "edit")     payload = handleEdit(p);
+      } finally {
+        lock.releaseLock();
+      }
+    } else {
+      if      (mode === "getPlan")  payload = handleGetPlan(p);
+      else if (mode === "history")  payload = handleHistory(p);
+      else                          payload = { ok: false, error: "Unknown mode: " + mode };
+    }
 
     return respond(payload);
   } catch (err) {
