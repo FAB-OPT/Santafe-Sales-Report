@@ -1711,6 +1711,17 @@
     </div>
 
     <!-- ════════════════════════════════════════
+     MODAL: PLAN LOADING
+════════════════════════════════════════ -->
+    <div id="mPlanLoad" class="modal-bg" style="display:none">
+      <div class="modal" style="max-width:300px;text-align:center;padding:32px 24px">
+        <div style="font-size:2rem;margin-bottom:12px">⏳</div>
+        <div style="font-weight:600;font-size:1rem;color:#1e293b">กำลังโหลด Plan Sale...</div>
+        <div style="font-size:0.82rem;color:#64748b;margin-top:6px">รอสักครู่</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
      MODAL: REVIEW
 ════════════════════════════════════════ -->
     <div id="mReview" class="modal-bg">
@@ -1890,8 +1901,9 @@
       let S = { code: "", branch: "", dm: "" };
       let _pendingPayload = null;
       let _editRow = null;
-      let _currentPlan = 0; // Plan Sale ที่ดึงจาก DB สำหรับวันที่ที่เลือก
-      let _planCache   = {}; // cache: "branch|date" → plan_sale (ลด concurrent fetch)
+      let _currentPlan   = 0;  // Plan Sale ที่ดึงจาก DB สำหรับวันที่ที่เลือก
+      let _planCache     = {}; // cache: "branch|date" → plan_sale
+      let _planFetchCbs  = {}; // callback queue: "branch|date" → [fn,...] (ป้องกัน fetch ซ้ำ)
 
       /* ════════════════════════════════════════════
          INIT
@@ -2199,9 +2211,15 @@
         };
         NUM_FIELDS.forEach(id => { p[id] = numVal(id); });
 
-        // ใช้ _currentPlan ที่โหลดไว้แล้วตั้งแต่เลือก slot → เปิด popup ทันที ไม่ต้อง fetch
-        p.plan_sale    = _currentPlan;
-        _pendingPayload = p;
+        // ถ้า plan พร้อม → เปิด review ทันที / ถ้ายังโหลด → แสดง loading popup ก่อน
+        const _cacheKey = S.code + "|" + date;
+        const _planReady = _planCache[_cacheKey] !== undefined;
+        if (!_planReady) document.getElementById("mPlanLoad").style.display = "flex";
+
+        getPlan(date, function(planVal) {
+          document.getElementById("mPlanLoad").style.display = "none";
+          p.plan_sale    = planVal;
+          _pendingPayload = p;
 
         function rvRow(lbl, val) {
           return `<div class="rv-row"><span class="rv-lbl">${lbl}</span><span class="rv-val">${val}</span></div>`;
@@ -2248,10 +2266,11 @@
           html += rvRow("Labour Baht", fmt(p.labour_baht) + labPct);
         }
 
-        document.getElementById("reviewBody").innerHTML = html;
-        document.getElementById("confirmBtn").disabled = false;
-        document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
-        openM("mReview");
+          document.getElementById("reviewBody").innerHTML = html;
+          document.getElementById("confirmBtn").disabled = false;
+          document.getElementById("confirmBtn").textContent = "ยืนยันส่ง ✓";
+          openM("mReview");
+        }); // end getPlan callback
       }
 
       function confirmSubmit() {
@@ -2438,21 +2457,26 @@
         });
       }
 
-      // Auto-fill Plan Sale จากฐานข้อมูล เมื่อเลือกวันที่ (cache ป้องกัน concurrent fetch)
-      function fetchPlanForDate(dateStr) {
-        _currentPlan = 0;
-        if (!dateStr || !S.code) return;
-        const cacheKey = S.code + "|" + dateStr;
-        if (_planCache[cacheKey] !== undefined) {
-          _currentPlan = _planCache[cacheKey];
-          return;
-        }
-        apiCall({ mode: "getPlan", branch_code: S.code, date: dateStr }, function (res) {
+      // ดึง Plan Sale พร้อม callback queue — fetch ครั้งเดียวแม้จะมีหลาย caller
+      function getPlan(dateStr, cb) {
+        if (!dateStr || !S.code) { cb(0); return; }
+        const key = S.code + "|" + dateStr;
+        if (_planCache[key] !== undefined) { cb(_planCache[key]); return; }
+        if (_planFetchCbs[key]) { _planFetchCbs[key].push(cb); return; } // รอ fetch เดิม
+        _planFetchCbs[key] = [cb];
+        apiCall({ mode: "getPlan", branch_code: S.code, date: dateStr }, function(res) {
           const val = (res && res.ok && res.rows && res.rows.length)
             ? (parseFloat(res.rows[0].plan_sale) || 0) : 0;
-          _planCache[cacheKey] = val;
+          _planCache[key] = val;
           _currentPlan = val;
+          (_planFetchCbs[key] || []).forEach(fn => fn(val));
+          delete _planFetchCbs[key];
         });
+      }
+
+      function fetchPlanForDate(dateStr) {
+        _currentPlan = 0;
+        getPlan(dateStr, function(val) { _currentPlan = val; });
       }
 
       function loadHistory() {
