@@ -1434,83 +1434,177 @@
           max-width: 640px;
         }
       }
-/* ─── DESKTOP SIDEBAR ─── */
+/* ════════════════════════════════════════════════════════
+   SHARED (mobile + desktop)
+════════════════════════════════════════════════════════ */
 .hdr-logout-btn { display:none; }
-.hdr-actions    { display:none !important; }  /* nav ย้ายไป sidebar แล้ว */
+.hdr-actions    { display:none !important; }
 .desk-sidebar   { display:none; }
 
-@media (min-width:641px) {
-  .desk-sidebar {
-    display:flex;
-    position:fixed;
-    left:0;
-    top:var(--hdr-h);
-    bottom:0;
-    width:210px;
-    background:var(--surface);
-    border-right:1px solid var(--bd);
-    flex-direction:column;
-    padding:16px 10px 24px;
-    z-index:90;
-    box-shadow:2px 0 10px rgba(0,0,0,.05);
-  }
-  .desk-sidebar.hidden { display:none !important; }
-  .desk-nav { display:flex; flex-direction:column; gap:3px; flex:1; }
-  .desk-nav-btn {
-    display:flex; align-items:center; gap:10px;
-    padding:11px 14px; border:none; background:none;
-    font-family:inherit; font-size:14px; font-weight:600;
-    color:var(--txt2); border-radius:10px; cursor:pointer;
-    text-align:left; width:100%; transition:background .15s,color .15s;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .desk-nav-btn:hover { background:var(--brand-l); color:var(--brand); }
-  .desk-nav-btn.active { background:var(--brand-l); color:var(--brand); }
-  .desk-nav-ico { font-size:1.1rem; width:22px; text-align:center; flex-shrink:0; }
-  .desk-nav-sep { height:1px; background:var(--bd); margin:10px 4px; }
-  .desk-logout-btn {
-    width:100%; padding:11px 14px; border:none; background:var(--red-l);
-    color:var(--red); font-family:inherit; font-size:14px; font-weight:700;
-    border-radius:10px; cursor:pointer; text-align:left;
-    display:flex; align-items:center; gap:10px;
-    transition:background .15s;
-  }
-  .desk-logout-btn:hover { background:#fecaca; }
-  /* Push content right of sidebar */
-  .screen.active:not(#sLogin) { margin-left:210px; }
-  /* Form gets more room on desktop */
-  .form-wrap { max-width:none; padding:16px 32px 80px; }
-}
-
-/* ─── DASHBOARD ─── */
-.dash-wrap { padding:16px 20px; max-width:960px; margin:0 auto 80px; }
-.dash-sec-title { font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin:20px 0 8px; }
-.dash-today-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-@media(min-width:640px){ .dash-today-grid { grid-template-columns:repeat(4,1fr); } }
-.dash-today-card { background:#fff; border-radius:12px; padding:18px 16px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
-.dash-today-card .dtc-slot { font-size:0.8rem; color:#64748b; margin-bottom:6px; }
-.dash-today-card .dtc-status { font-size:1.05rem; font-weight:600; margin-bottom:4px; }
-.dash-today-card .dtc-actual { font-size:1.4rem; font-weight:800; color:var(--brand); line-height:1.2; }
-.dash-today-card .dtc-plan { font-size:0.78rem; color:#64748b; margin-top:3px; }
-.dash-stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-@media(min-width:480px){ .dash-stats-grid { grid-template-columns:repeat(4,1fr); } }
-.dash-stat { background:#fff; border-radius:10px; padding:16px 10px; box-shadow:0 1px 4px rgba(0,0,0,.06); text-align:center; }
-.dash-stat .ds-val { font-size:1.3rem; font-weight:800; color:var(--brand); }
-.dash-stat .ds-lbl { font-size:0.72rem; color:#64748b; margin-top:3px; }
-.dash-tbl { width:100%; border-collapse:collapse; font-size:0.87rem; }
-.dash-tbl th { background:var(--brand); color:#fff; padding:10px 8px; text-align:center; }
-.dash-tbl td { padding:9px 8px; border-bottom:1px solid #f1f5f9; text-align:center; }
+/* ─── DASHBOARD base (mobile) ─── */
+.dash-wrap { padding:16px; max-width:none; margin:0; }
+.dash-page-hdr { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:4px; }
+.dash-page-title { font-size:1.05rem; font-weight:800; color:var(--txt); }
+.dash-page-sub { font-size:0.78rem; color:var(--txt2); margin-top:2px; }
+.dash-upper-wrap { display:block; }
+.dash-upper-left, .dash-upper-right { display:block; }
+.dash-sec-title { font-size:0.73rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin:18px 0 8px; }
+.dash-today-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.dash-today-card { background:#fff; border-radius:12px; padding:16px 14px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.dash-today-card .dtc-slot { font-size:0.78rem; color:#64748b; margin-bottom:5px; }
+.dash-today-card .dtc-status { font-size:1rem; font-weight:600; margin-bottom:3px; }
+.dash-today-card .dtc-actual { font-size:1.35rem; font-weight:800; color:var(--brand); line-height:1.2; }
+.dash-today-card .dtc-plan { font-size:0.76rem; color:#64748b; margin-top:3px; }
+.dash-stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.dash-stat { background:#fff; border-radius:10px; padding:14px 10px; box-shadow:0 1px 4px rgba(0,0,0,.06); text-align:center; }
+.dash-stat .ds-val { font-size:1.2rem; font-weight:800; color:var(--brand); }
+.dash-stat .ds-lbl { font-size:0.7rem; color:#64748b; margin-top:3px; }
+.dash-tbl { width:100%; border-collapse:collapse; font-size:0.84rem; }
+.dash-tbl th { background:var(--brand); color:#fff; padding:9px 7px; text-align:center; font-size:0.78rem; }
+.dash-tbl td { padding:8px 7px; border-bottom:1px solid #f1f5f9; text-align:center; }
 .dash-tbl tr:last-child td { border-bottom:none; }
-.d-ok { color:#15803d; font-weight:700; }
-.d-low { color:#dc2626; font-weight:700; }
+.d-ok { color:var(--green); font-weight:700; }
+.d-low { color:var(--red); font-weight:700; }
 .dash-card-wrap { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
 /* Date nav */
 .dash-date-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
-.dash-date-nav { display:flex; align-items:center; gap:0; border:1.5px solid var(--bd); border-radius:10px; overflow:hidden; background:#fff; flex:1; max-width:280px; }
+.dash-date-nav { display:flex; align-items:center; border:1.5px solid var(--bd); border-radius:10px; overflow:hidden; background:#fff; flex:1; max-width:280px; }
 .dash-date-nav input[type="date"] { flex:1; padding:8px 10px; border:none; font-family:inherit; font-size:14px; color:var(--txt); background:transparent; outline:none; min-height:40px; text-align:center; cursor:pointer; }
 .dash-date-arrow { width:36px; height:40px; border:none; background:none; font-size:1.1rem; cursor:pointer; color:var(--txt2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .dash-date-arrow:hover { background:#f1f5f9; color:var(--brand); }
 .dash-date-divider { width:1px; height:24px; background:var(--bd); flex-shrink:0; }
+
+/* ════════════════════════════════════════════════════════
+   DESKTOP REDESIGN  ≥ 641 px
+   Mobile styles above are NOT touched
+════════════════════════════════════════════════════════ */
+@media (min-width:641px) {
+  :root { --sidebar-w:240px; --hdr-h:62px; }
+
+  /* ─── HEADER ─── */
+  .hdr { height:var(--hdr-h); padding:0 28px 0 20px; box-shadow:0 1px 0 var(--bd); }
+  .hdr-logo-img { width:40px; height:40px; border-radius:10px; }
+  .hdr-branch-name { font-size:15px; font-weight:700; }
+  .hdr-branch-dm   { font-size:12px; }
+
+  /* ─── SIDEBAR ─── */
+  .desk-sidebar {
+    display:flex; flex-direction:column;
+    position:fixed; left:0; top:var(--hdr-h); bottom:0;
+    width:var(--sidebar-w); z-index:90;
+    background:#1e293b;
+    box-shadow:2px 0 20px rgba(0,0,0,.15);
+    padding:0 0 20px;
+    overflow-y:auto;
+  }
+  .desk-sidebar.hidden { display:none !important; }
+
+  /* Brand section */
+  .dsb-brand {
+    display:flex; align-items:center; gap:12px;
+    padding:18px 16px 16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    margin-bottom:10px;
+  }
+  .dsb-logo { width:38px; height:38px; border-radius:10px; object-fit:cover; flex-shrink:0; }
+  .dsb-info { min-width:0; }
+  .dsb-branch { font-size:13px; font-weight:700; color:#f1f5f9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dsb-dm     { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; }
+  .dsb-nav-label { font-size:10px; font-weight:700; color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.08em; padding:4px 16px 6px; }
+
+  /* Nav */
+  .desk-nav { display:flex; flex-direction:column; gap:2px; flex:1; padding:0 10px; }
+  .desk-nav-btn {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 14px; border:none; background:none;
+    font-family:inherit; font-size:13.5px; font-weight:600;
+    color:rgba(255,255,255,.65); border-radius:8px; cursor:pointer;
+    text-align:left; width:100%;
+    transition:background .15s, color .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .desk-nav-btn:hover  { background:rgba(255,255,255,.08); color:#fff; }
+  .desk-nav-btn.active { background:var(--brand); color:#fff; box-shadow:0 2px 8px rgba(242,108,28,.35); }
+  .desk-nav-ico { font-size:17px; width:20px; text-align:center; flex-shrink:0; }
+  .desk-nav-sep { height:1px; background:rgba(255,255,255,.1); margin:10px 10px; }
+  .desk-logout-btn {
+    display:flex; align-items:center; gap:12px;
+    margin:0 10px; padding:11px 14px;
+    border:none; background:none; border-radius:8px; cursor:pointer;
+    font-family:inherit; font-size:13.5px; font-weight:600;
+    color:rgba(255,255,255,.5);
+    transition:background .15s, color .15s;
+  }
+  .desk-logout-btn:hover { background:rgba(220,38,38,.2); color:#fca5a5; }
+
+  /* ─── CONTENT LAYOUT ─── */
+  .screen.active:not(#sLogin) { margin-left:var(--sidebar-w); }
+
+  /* ─── FORM ─── */
+  .form-wrap {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    padding:28px 32px 0;
+    align-items:start;
+    max-width:none;
+  }
+  /* Card 1 (info) and card 4 (labour) span full width */
+  .form-wrap .card:nth-child(1),
+  .form-wrap .card:nth-child(4) { grid-column:1 / -1; }
+  .form-wrap .card { margin-bottom:0; border-radius:12px; }
+  .form-wrap .card-body { padding:20px 22px; }
+  .form-wrap .card-hdr  { padding:13px 22px; font-size:13px; }
+  .field-grid { grid-template-columns:repeat(4,1fr); gap:14px; }
+  .info-grid  { grid-template-columns:180px 150px 1fr; gap:14px; }
+  .field input, .field select { font-size:14px; min-height:42px; padding:9px 12px; }
+  .field label { font-size:11.5px; }
+  /* Submit button inline on desktop */
+  .form-sticky-btn {
+    position:static; padding:20px 32px 36px; background:none;
+    border:none; box-shadow:none; text-align:right;
+    grid-column:1 / -1;
+  }
+  .form-sticky-btn .btn-lg { width:auto; min-width:220px; font-size:15px; }
+
+  /* ─── DASHBOARD ─── */
+  .dash-wrap { padding:28px 32px 40px; }
+  .dash-page-hdr { margin-bottom:6px; }
+  .dash-page-title { font-size:1.25rem; font-weight:800; }
+  .dash-page-sub   { font-size:13px; }
+  .dash-upper-wrap {
+    display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;
+  }
+  .dash-upper-left, .dash-upper-right { display:block; }
+  .dash-upper-right .dash-stats-grid { grid-template-columns:1fr 1fr; gap:12px; }
+  .dash-upper-right .dash-stat { padding:18px 14px; border-radius:12px; }
+  .dash-upper-right .dash-stat .ds-val { font-size:1.5rem; }
+  .dash-upper-right .dash-stat .ds-lbl { font-size:12px; }
+  .dash-today-grid { grid-template-columns:1fr 1fr; gap:14px; }
+  .dash-today-card { padding:20px 18px; border-radius:14px; }
+  .dash-today-card .dtc-slot   { font-size:12px; }
+  .dash-today-card .dtc-status { font-size:1.05rem; }
+  .dash-today-card .dtc-actual { font-size:1.6rem; }
+  .dash-sec-title  { font-size:11px; margin:20px 0 10px; }
+  .dash-tbl        { font-size:13px; }
+  .dash-tbl th     { padding:11px 12px; font-size:12px; }
+  .dash-tbl td     { padding:10px 12px; }
+  .dash-card-wrap  { border-radius:12px; }
+
+  /* ─── HISTORY ─── */
+  .hist-wrap { padding:28px 32px 40px; }
+  .hist-hdr  { margin-bottom:18px; }
+
+  /* ─── PLAN ─── */
+  .plan-wrap { max-width:none; padding:28px 32px 40px; }
+  .plan-sticky-btn {
+    position:static; padding:0; background:none;
+    border:none; box-shadow:none; margin-top:20px;
+    justify-content:flex-end; gap:12px;
+  }
+  .plan-sticky-btn .btn-lg { width:auto; min-width:200px; }
+  .plan-sticky-btn .btn-outline { width:auto; }
+}
     </style>
   </head>
 
@@ -1543,6 +1637,16 @@
      DESKTOP SIDEBAR (hidden until logged in)
 ════════════════════════════════════════ -->
     <aside id="deskSidebar" class="desk-sidebar hidden">
+      <!-- Brand / Branch info -->
+      <div class="dsb-brand">
+        <img src="536282464_1192954076197758_7560981869126705598_n.jpg" alt="logo" class="dsb-logo">
+        <div class="dsb-info">
+          <div class="dsb-branch" id="sidebarBranchName">—</div>
+          <div class="dsb-dm" id="sidebarBranchDm">—</div>
+        </div>
+      </div>
+      <!-- Nav -->
+      <div class="dsb-nav-label">เมนู</div>
       <nav class="desk-nav">
         <button class="desk-nav-btn" id="dnDash" onclick="showDash()">
           <span class="desk-nav-ico">📊</span>แดชบอร์ด
@@ -1824,36 +1928,49 @@
 ════════════════════════════════════════ -->
     <div id="sDash" class="screen">
       <div class="dash-wrap">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <h2 style="font-size:1.05rem;font-weight:800">📊 แดชบอร์ด</h2>
-          <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569">🔄 รีเฟรช</button>
-        </div>
-
-        <div class="dash-sec-title">สรุปรายวัน</div>
-        <div class="dash-date-row">
-          <div class="dash-date-nav">
-            <button class="dash-date-arrow" onclick="shiftDashDate(-1)">‹</button>
-            <div class="dash-date-divider"></div>
-            <input type="date" id="dashDatePicker" onchange="renderDashFromCache()">
-            <div class="dash-date-divider"></div>
-            <button class="dash-date-arrow" onclick="shiftDashDate(1)">›</button>
+        <!-- Page header -->
+        <div class="dash-page-hdr">
+          <div>
+            <div class="dash-page-title">📊 แดชบอร์ด</div>
+            <div class="dash-page-sub" id="dashPageSub"></div>
           </div>
-          <button class="btn btn-sm btn-outline" onclick="document.getElementById('dashDatePicker').value=todayStr();renderDashFromCache()">วันนี้</button>
-        </div>
-        <div class="dash-today-grid" id="dashTodayGrid">
-          <div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
-          <div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
+          <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
         </div>
 
-        <div id="dashMonthTitle" class="dash-sec-title">สรุปรายเดือน</div>
-        <div class="dash-stats-grid" id="dashStatsGrid">
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
-          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
+        <!-- Upper: 2-col on desktop, stacked on mobile -->
+        <div class="dash-upper-wrap">
+          <!-- Left: รายวัน -->
+          <div class="dash-upper-left">
+            <div class="dash-sec-title">สรุปรายวัน</div>
+            <div class="dash-date-row">
+              <div class="dash-date-nav">
+                <button class="dash-date-arrow" onclick="shiftDashDate(-1)">‹</button>
+                <div class="dash-date-divider"></div>
+                <input type="date" id="dashDatePicker" onchange="renderDashFromCache()">
+                <div class="dash-date-divider"></div>
+                <button class="dash-date-arrow" onclick="shiftDashDate(1)">›</button>
+              </div>
+              <button class="btn btn-sm btn-outline" onclick="document.getElementById('dashDatePicker').value=todayStr();renderDashFromCache()">วันนี้</button>
+            </div>
+            <div class="dash-today-grid" id="dashTodayGrid">
+              <div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
+              <div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
+            </div>
+          </div>
+          <!-- Right: รายเดือน -->
+          <div class="dash-upper-right">
+            <div id="dashMonthTitle" class="dash-sec-title">สรุปรายเดือน</div>
+            <div class="dash-stats-grid" id="dashStatsGrid">
+              <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
+              <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
+              <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
+              <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
+            </div>
+          </div>
         </div>
 
-        <div class="dash-sec-title">30 วันล่าสุด <span style="font-weight:400;text-transform:none">(รอบสิ้นวัน)</span></div>
+        <!-- Recent table -->
+        <div class="dash-sec-title" style="margin-top:24px">30 วันล่าสุด <span style="font-weight:400;text-transform:none">(รอบสิ้นวัน)</span></div>
         <div class="dash-card-wrap">
           <table class="dash-tbl">
             <thead><tr><th>วันที่</th><th>Plan</th><th>Actual</th><th>%</th><th>%Labour</th></tr></thead>
@@ -2234,6 +2351,8 @@
         // hdrActions ย้ายไป sidebar แล้ว — ไม่ต้องแสดง
         document.getElementById("hdrBranchName").textContent = S.branch;
         document.getElementById("hdrBranchDm").textContent = "BZM: " + S.dm;
+        document.getElementById("sidebarBranchName").textContent = S.branch;
+        document.getElementById("sidebarBranchDm").textContent = "BZM: " + S.dm;
         document.getElementById("mobNav").classList.add("visible");
         document.getElementById("hdrLogoutBtn").style.display = "";
         document.getElementById("deskSidebar").classList.remove("hidden");
@@ -2264,6 +2383,8 @@
       let _dashRows = []; // cache rows for date picker re-render
 
       function loadDash() {
+        const sub = document.getElementById("dashPageSub");
+        if (sub) sub.textContent = S.branch + (S.dm ? "  ·  BZM: " + S.dm : "");
         document.getElementById("dashTodayGrid").innerHTML =
           `<div class="dash-today-card"><div class="dtc-slot">🕓 รอบ 16.00</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>` +
           `<div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>`;
