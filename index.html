@@ -1434,8 +1434,55 @@
           max-width: 640px;
         }
       }
+/* ─── DESKTOP SIDEBAR ─── */
+.hdr-logout-btn { display:none; }
+.hdr-actions    { display:none !important; }  /* nav ย้ายไป sidebar แล้ว */
+.desk-sidebar   { display:none; }
+
+@media (min-width:641px) {
+  .desk-sidebar {
+    display:flex;
+    position:fixed;
+    left:0;
+    top:var(--hdr-h);
+    bottom:0;
+    width:210px;
+    background:var(--surface);
+    border-right:1px solid var(--bd);
+    flex-direction:column;
+    padding:16px 10px 24px;
+    z-index:90;
+    box-shadow:2px 0 10px rgba(0,0,0,.05);
+  }
+  .desk-sidebar.hidden { display:none !important; }
+  .desk-nav { display:flex; flex-direction:column; gap:3px; flex:1; }
+  .desk-nav-btn {
+    display:flex; align-items:center; gap:10px;
+    padding:11px 14px; border:none; background:none;
+    font-family:inherit; font-size:14px; font-weight:600;
+    color:var(--txt2); border-radius:10px; cursor:pointer;
+    text-align:left; width:100%; transition:background .15s,color .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .desk-nav-btn:hover { background:var(--brand-l); color:var(--brand); }
+  .desk-nav-btn.active { background:var(--brand-l); color:var(--brand); }
+  .desk-nav-ico { font-size:1.1rem; width:22px; text-align:center; flex-shrink:0; }
+  .desk-nav-sep { height:1px; background:var(--bd); margin:10px 4px; }
+  .desk-logout-btn {
+    width:100%; padding:11px 14px; border:none; background:var(--red-l);
+    color:var(--red); font-family:inherit; font-size:14px; font-weight:700;
+    border-radius:10px; cursor:pointer; text-align:left;
+    display:flex; align-items:center; gap:10px;
+    transition:background .15s;
+  }
+  .desk-logout-btn:hover { background:#fecaca; }
+  /* Push content right of sidebar */
+  .screen.active:not(#sLogin) { margin-left:210px; }
+  /* Form gets more room on desktop */
+  .form-wrap { max-width:none; padding:16px 32px 80px; }
+}
+
 /* ─── DASHBOARD ─── */
-.hdr-logout-btn { display:none; }  /* ซ่อนบน desktop โดย default */
 .dash-wrap { padding:16px 20px; max-width:960px; margin:0 auto 80px; }
 .dash-sec-title { font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.06em; margin:20px 0 8px; }
 .dash-today-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
@@ -1491,6 +1538,30 @@
       </div>
       <button class="btn btn-sm btn-danger hdr-logout-btn" id="hdrLogoutBtn" onclick="doLogout()" style="display:none">ออกจากระบบ</button>
     </header>
+
+    <!-- ════════════════════════════════════════
+     DESKTOP SIDEBAR (hidden until logged in)
+════════════════════════════════════════ -->
+    <aside id="deskSidebar" class="desk-sidebar hidden">
+      <nav class="desk-nav">
+        <button class="desk-nav-btn" id="dnDash" onclick="showDash()">
+          <span class="desk-nav-ico">📊</span>แดชบอร์ด
+        </button>
+        <button class="desk-nav-btn" id="dnForm" onclick="showForm()">
+          <span class="desk-nav-ico">📋</span>ส่งยอดขาย
+        </button>
+        <button class="desk-nav-btn" id="dnPlan" onclick="showPlan()">
+          <span class="desk-nav-ico">📅</span>Plan Sale
+        </button>
+        <button class="desk-nav-btn" id="dnHistory" onclick="showHistory()">
+          <span class="desk-nav-ico">🗂️</span>ประวัติ
+        </button>
+      </nav>
+      <div class="desk-nav-sep"></div>
+      <button class="desk-logout-btn" onclick="doLogout()">
+        <span class="desk-nav-ico">🚪</span>ออกจากระบบ
+      </button>
+    </aside>
 
     <!-- ════════════════════════════════════════
      SCREEN: LOGIN
@@ -2136,6 +2207,7 @@
         document.getElementById("loginBtn").disabled = true;
         document.getElementById("appHdr").style.display = "none";
         document.getElementById("hdrLogoutBtn").style.display = "none";
+        document.getElementById("deskSidebar").classList.add("hidden");
         document.getElementById("mobNav").classList.remove("visible");
         showScreen("sLogin");
       }
@@ -2150,6 +2222,8 @@
 
       function setMobTab(btnId) {
         document.querySelectorAll(".mob-nav-btn").forEach(b => b.classList.toggle("active", b.id === btnId));
+        const deskId = btnId.replace("mn", "dn");
+        document.querySelectorAll(".desk-nav-btn").forEach(b => b.classList.toggle("active", b.id === deskId));
       }
 
       function enterApp() {
@@ -2157,11 +2231,12 @@
         hdr.style.display = "flex";
         document.getElementById("hdrDivider").style.display = "";
         document.getElementById("hdrBranch").style.display = "";
-        document.getElementById("hdrActions").style.display = "";
+        // hdrActions ย้ายไป sidebar แล้ว — ไม่ต้องแสดง
         document.getElementById("hdrBranchName").textContent = S.branch;
         document.getElementById("hdrBranchDm").textContent = "BZM: " + S.dm;
         document.getElementById("mobNav").classList.add("visible");
         document.getElementById("hdrLogoutBtn").style.display = "";
+        document.getElementById("deskSidebar").classList.remove("hidden");
         document.getElementById("submit_date").value = todayStr();
         const savedName = localStorage.getItem(LS_NAME);
         if (savedName) document.getElementById("submitter_name").value = savedName;
