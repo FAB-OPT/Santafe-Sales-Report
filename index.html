@@ -1488,9 +1488,12 @@
   .hdr-branch-dm   { font-size:12px; }
 
   /* ─── SIDEBAR ─── */
+  /* ซ่อน header บน desktop — sidebar แสดงข้อมูลแทน */
+  #appHdr { display:none !important; }
+
   .desk-sidebar {
     display:flex; flex-direction:column;
-    position:fixed; left:0; top:var(--hdr-h); bottom:0;
+    position:fixed; left:0; top:0; bottom:0;
     width:var(--sidebar-w); z-index:90;
     background:#1e293b;
     box-shadow:2px 0 20px rgba(0,0,0,.15);
