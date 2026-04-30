@@ -1786,7 +1786,7 @@ body { background: var(--bg) !important; color: var(--txt) !important; }
 
 body { background: var(--bg); color: var(--txt); }
 
-/* ─── CARDS — Apple Notes flat ─── */
+/* ─── CARDS — clean + orange accent header ─── */
 .card {
   background: var(--surface) !important;
   border-radius: var(--radius);
@@ -1796,14 +1796,14 @@ body { background: var(--bg); color: var(--txt); }
   overflow: hidden;
 }
 .card-hdr {
-  background: var(--surface) !important;
-  color: var(--txt) !important;
-  border-bottom: 1px solid var(--bd-2);
-  padding: 14px 18px 10px;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  text-transform: none;
+  background: var(--brand-l) !important;
+  color: var(--brand-d) !important;
+  border-bottom: 1px solid #fed7aa !important;
+  padding: 12px 18px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1830,7 +1830,7 @@ body { background: var(--bg); color: var(--txt); }
 /* Tabs: minimal */
 .login-tabs { background: var(--bg-2) !important; border-radius: 9px !important; margin: 18px 20px 0 !important; padding: 3px !important; }
 .login-tab  { border-radius: 7px !important; font-size: 13.5px !important; font-weight: 600 !important; color: var(--txt2) !important; transition: all .15s; }
-.login-tab.active { background: var(--surface) !important; color: var(--txt) !important; box-shadow: 0 1px 2px rgba(0,0,0,.06) !important; }
+.login-tab.active { background: var(--brand) !important; color: #fff !important; box-shadow: 0 2px 6px rgba(242,108,28,.30) !important; }
 /* OTP boxes */
 .login-otp-box {
   width: 48px !important; height: 58px !important;
@@ -2222,6 +2222,82 @@ body { background: var(--bg); color: var(--txt); }
 
   /* ─ Today/recent table hover ─ */
   .dash-tbl tbody tr:hover td { background: var(--bg-2) !important; }
+
+  /* ════════════════════════════════════════
+     ★ PATCH: นำสีกลับมา + แก้ layout
+  ════════════════════════════════════════ */
+
+  /* (2) ซ่อน dashPageSub บน desktop เพราะ sidebar แสดงข้อมูลแล้ว */
+  .dash-page-sub { display: none !important; }
+
+  /* (2) ตารางหัวสี — ทุก th กลับเป็นส้ม */
+  thead tr, .plan-grid-hdr, .dash-tbl th {
+    background: var(--brand) !important;
+  }
+  thead th, .plan-grid-hdr, .dash-tbl th {
+    color: #fff !important;
+    font-weight: 700 !important;
+    border-bottom: none !important;
+  }
+
+  /* (2) Card border สี — เพิ่ม border-top สีส้มอ่อน */
+  .dash-today-card,
+  .dash-stat,
+  .dash-card-wrap,
+  .plan-sum-card,
+  .plan-grid,
+  .hist-table-wrap {
+    border: 1px solid var(--bd) !important;
+    border-top: 3px solid var(--brand) !important;
+  }
+
+  /* (2) ตัวเลขแดชบอร์ดเป็นสีส้มเด่น */
+  .dash-today-card .dtc-actual { color: var(--brand) !important; }
+  .dash-stat .ds-val { color: var(--brand) !important; }
+
+  /* (4) Plan Sale: ช่อง input ใหญ่ไป — กำหนด max-width */
+  .plan-grid-hdr,
+  .plan-row {
+    grid-template-columns: 70px 130px minmax(220px, 380px) 90px !important;
+    gap: 16px !important;
+  }
+  .plan-row input {
+    max-width: 380px !important;
+  }
+  .plan-sum-val { color: var(--brand) !important; }
+
+  /* (4) Plan Sale: ปุ่มกลับ + บันทึก = กึ่งกลาง */
+  .plan-sticky-btn {
+    justify-content: center !important;
+  }
+
+  /* (5) History: ตารางย่อตามจอ — overflow-x */
+  .hist-table-wrap {
+    overflow-x: auto !important;
+  }
+  .hist-table-wrap table { min-width: 900px; }
+}
+
+/* (2) Mobile dashboard: กลับเป็นสี */
+@media (max-width: 640px) {
+  .dash-page-sub { display: none !important; }
+  .dash-today-card .dtc-actual { color: var(--brand) !important; }
+  .dash-stat .ds-val { color: var(--brand) !important; }
+  .dash-tbl th {
+    background: var(--brand) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+  }
+  .dash-today-card,
+  .dash-stat,
+  .dash-card-wrap,
+  .plan-sum-card {
+    border-top: 3px solid var(--brand) !important;
+  }
+  .plan-sum-val { color: var(--brand) !important; }
+  .hist-table-wrap { overflow-x: auto !important; }
+  .hist-table-wrap table { min-width: 900px; }
+  .plan-sticky-btn { justify-content: center !important; }
 }
     </style>
   </head>
@@ -3543,13 +3619,13 @@ body { background: var(--bg); color: var(--txt); }
 
         // ── TABLE (desktop) ──────────────────────
         let tbl = `<table><thead><tr>
-    <th>วันที่</th><th>รอบ</th><th>ผู้ส่ง</th>
+    <th>รอบ</th><th>วันที่</th><th>ผู้ส่ง</th>
     <th style="text-align:right">Plan</th>
     <th style="text-align:right">Actual</th>
     <th style="text-align:right">%</th>
     <th style="text-align:right">Trans</th>
     <th style="text-align:right">Customer</th>
-    <th style="text-align:right">Labour ฿</th>
+    <th style="text-align:right">Labour (บาท)</th>
     <th></th>
   </tr></thead><tbody>`;
 
@@ -3575,13 +3651,21 @@ body { background: var(--bg); color: var(--txt); }
           const labourCell = isEod ? (() => {
             const lb = parseFloat(r.labour_baht) || 0;
             const lbPct = actual > 0 ? `<span style="color:var(--txt2);font-size:11px;margin-left:4px">(${(lb/actual*100).toFixed(1)}%)</span>` : "";
-            return `฿${fmt(lb)}${lbPct}`;
+            return `${fmt(lb)}${lbPct}`;
           })() : "<span style='color:#94a3b8'>—</span>";
+
+          // dd-mm-yyyy (พ.ศ.)
+          const dateDMY = (() => {
+            if (!r.submit_date) return "-";
+            const [y, m, d] = String(r.submit_date).split("-");
+            if (!y || !m || !d) return r.submit_date;
+            return `${d}-${m}-${parseInt(y)+543}`;
+          })();
 
           // Table row
           tbl += `<tr>
-      <td style="font-weight:600">${r.submit_date || "-"}</td>
       <td>${slotBadge} ${editBadge}</td>
+      <td style="font-weight:600;white-space:nowrap">${dateDMY}</td>
       <td>${r.submitter_name || "-"}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(plan)}</td>
       <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${fmt(actual)}</td>
@@ -3592,10 +3676,10 @@ body { background: var(--bg); color: var(--txt); }
       <td style="text-align:center">${editBtn}</td>
     </tr>`;
 
-          // Card
+          // Card (mobile)
           cards += `<div class="hist-card">
       <div class="hist-card-top">
-        <div class="hist-card-date">${r.submit_date || "-"}</div>
+        <div class="hist-card-date">${dateDMY}</div>
         ${slotBadge}${editBadge}
       </div>
       <div class="hist-card-row"><span class="hist-card-lbl">ผู้ส่ง</span><span class="hist-card-val">${r.submitter_name || "-"}</span></div>
@@ -3608,7 +3692,7 @@ body { background: var(--bg); color: var(--txt); }
         <span class="hist-card-val ${pctCls}">${pctTxt}</span>
       </div>
       <div class="hist-card-row"><span class="hist-card-lbl">Trans / Customer</span><span class="hist-card-val">${fmt(r.total_trans)} / ${fmt(r.customer)}</span></div>
-      ${isEod ? `<div class="hist-card-row"><span class="hist-card-lbl">Labour Hour</span><span class="hist-card-val">${parseFloat(r.labour_hour)||0} ชม.</span></div><div class="hist-card-row"><span class="hist-card-lbl">Labour Baht</span><span class="hist-card-val">฿${fmt(r.labour_baht)}${actual > 0 ? ` (${(parseFloat(r.labour_baht)/actual*100).toFixed(1)}%)` : ""}</span></div>` : ""}
+      ${isEod ? `<div class="hist-card-row"><span class="hist-card-lbl">Labour Hour</span><span class="hist-card-val">${parseFloat(r.labour_hour)||0} ชม.</span></div><div class="hist-card-row"><span class="hist-card-lbl">Labour (บาท)</span><span class="hist-card-val">${fmt(r.labour_baht)}${actual > 0 ? ` (${(parseFloat(r.labour_baht)/actual*100).toFixed(1)}%)` : ""}</span></div>` : ""}
       <div class="hist-card-actions">${editBtn}</div>
     </div>`;
         });
