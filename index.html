@@ -2255,14 +2255,19 @@ body { background: var(--bg); color: var(--txt); }
   .dash-today-card .dtc-actual { color: var(--brand) !important; }
   .dash-stat .ds-val { color: var(--brand) !important; }
 
-  /* (4) Plan Sale: ช่อง input ใหญ่ไป — กำหนด max-width */
+  /* (4) Plan Sale: cap ความกว้างทั้ง grid (ไม่มีช่องโล่งหลังสถานะ) */
+  .plan-grid {
+    max-width: 720px !important;
+    margin-left: 0;
+  }
   .plan-grid-hdr,
   .plan-row {
-    grid-template-columns: 70px 130px minmax(220px, 380px) 90px !important;
+    grid-template-columns: 70px 130px 1fr 90px !important;
     gap: 16px !important;
   }
   .plan-row input {
-    max-width: 380px !important;
+    width: 100% !important;
+    max-width: none !important;
   }
   .plan-sum-val { color: var(--brand) !important; }
 
@@ -2275,18 +2280,32 @@ body { background: var(--bg); color: var(--txt); }
   .hist-table-wrap {
     overflow-x: auto !important;
   }
-  .hist-table-wrap table { min-width: 900px; }
+  .hist-table-wrap table { min-width: 1100px; }
 
-  /* (1) Dashboard 2-col: stats ซ้าย, ตาราง 30 วัน ขวา */
+  /* (2) ย่อ input ที่ยาวเกิน — เหลือ ~30% */
+  #submitter_name { max-width: 280px !important; }
+  #customer, #labour_hour, #labour_baht { max-width: 200px !important; }
+
+  /* (1) Dashboard 2-col: stats ซ้าย, ตาราง 30 วัน ขวา (stretch ความสูง) */
   .dash-grid-main {
     display: grid !important;
     grid-template-columns: minmax(420px, 480px) 1fr !important;
     gap: 24px !important;
-    align-items: start !important;
+    align-items: stretch !important;
   }
   .dash-col-left { min-width: 0; }
-  .dash-col-right { min-width: 0; }
-  .dash-col-right .dash-card-wrap { overflow: auto; max-height: calc(100vh - 200px); }
+  .dash-col-right {
+    min-width: 0;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .dash-col-right .dash-card-wrap {
+    flex: 1 !important;
+    overflow: auto !important;
+    display: flex;
+    flex-direction: column;
+  }
+  .dash-col-right .dash-card-wrap table { flex: 1; }
 
   /* Card-hdr ส้ม solid (ตามที่ขอ "เพิ่มสีบนกรอบ") */
   .card-hdr {
@@ -2391,9 +2410,7 @@ body { background: var(--bg); color: var(--txt); }
         </button>
       </nav>
       <div class="desk-nav-sep"></div>
-      <button class="desk-logout-btn" onclick="doLogout()">
-        <span class="desk-nav-ico">🚪</span>ออกจากระบบ
-      </button>
+      <button class="desk-logout-btn" onclick="doLogout()">ออกจากระบบ</button>
     </aside>
 
     <!-- ════════════════════════════════════════
@@ -3659,6 +3676,15 @@ body { background: var(--bg); color: var(--txt); }
           return;
         }
 
+        // เรียงน้อย → มาก ตามวันที่ (และ slot 16.00 มาก่อนสิ้นวันในวันเดียวกัน)
+        rows = rows.slice().sort((a, b) => {
+          const da = String(a.submit_date || "");
+          const db = String(b.submit_date || "");
+          if (da !== db) return da < db ? -1 : 1;
+          // same date → 16.00 มาก่อน "สิ้นวัน"
+          return (a.submit_time_slot === "16.00" ? -1 : 1) - (b.submit_time_slot === "16.00" ? -1 : 1);
+        });
+
         // ── TABLE (desktop) ──────────────────────
         let tbl = `<table><thead><tr>
     <th>รอบ</th><th>วันที่</th><th>ผู้ส่ง</th>
@@ -3667,7 +3693,9 @@ body { background: var(--bg); color: var(--txt); }
     <th style="text-align:right">%</th>
     <th style="text-align:right">Trans</th>
     <th style="text-align:right">Customer</th>
+    <th style="text-align:right">Labour (Hour)</th>
     <th style="text-align:right">Labour (บาท)</th>
+    <th style="text-align:right">Labour (%)</th>
     <th></th>
   </tr></thead><tbody>`;
 
@@ -3691,11 +3719,14 @@ body { background: var(--bg); color: var(--txt); }
           const editBtn = `<button class="btn-edit-row btn btn-sm"
       style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa"
       onclick="openEdit(${JSON.stringify(r).replace(/"/g, "&quot;")})">${editLabel}</button>`;
-          const labourCell = isEod ? (() => {
-            const lb = parseFloat(r.labour_baht) || 0;
-            const lbPct = actual > 0 ? `<span style="color:var(--txt2);font-size:11px;margin-left:4px">(${(lb/actual*100).toFixed(1)}%)</span>` : "";
-            return `${fmt(lb)}${lbPct}`;
-          })() : "<span style='color:#94a3b8'>—</span>";
+          // Labour cells (3 columns)
+          const dash = "<span style='color:#94a3b8'>—</span>";
+          const lhCell = isEod ? fmt(parseFloat(r.labour_hour) || 0) : dash;
+          const lbVal  = parseFloat(r.labour_baht) || 0;
+          const lbCell = isEod ? fmt(lbVal) : dash;
+          const lpCell = isEod && actual > 0
+            ? `${(lbVal / actual * 100).toFixed(1)}%`
+            : dash;
 
           // dd-mm-yyyy (พ.ศ.)
           const dateDMY = (() => {
@@ -3715,7 +3746,9 @@ body { background: var(--bg); color: var(--txt); }
       <td style="text-align:right" class="${pctCls}">${pctTxt}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.total_trans)}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.customer)}</td>
-      <td style="text-align:right">${labourCell}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${lhCell}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${lbCell}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${lpCell}</td>
       <td style="text-align:center">${editBtn}</td>
     </tr>`;
 
