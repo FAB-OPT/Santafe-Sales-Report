@@ -2320,23 +2320,29 @@ body { background: var(--bg); color: var(--txt); }
     color: #fff !important;
   }
 
-  /* (1) Dashboard ใหม่: stats เต็มแถวบน, ล่าง 2-col (รายวัน | 30 วันล่าสุด) */
+  /* (1) Dashboard: single column stacked — ไม่มี "ขวาว่าง" */
+  .dash-wrap { max-width: 1280px !important; margin: 0 auto !important; }
   .dash-stats-row {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 12px !important;
-    margin-bottom: 24px !important;
+    gap: 14px !important;
+    margin-bottom: 28px !important;
   }
+  /* ทั้ง 2 sections ซ้อนเต็มความกว้าง (ไม่ใช่ 2-col แล้ว) */
   .dash-grid-main {
-    display: grid !important;
-    grid-template-columns: minmax(360px, 440px) 1fr !important;
-    gap: 24px !important;
-    align-items: start !important;
+    display: block !important;
   }
   .dash-col-left,
-  .dash-col-right { min-width: 0; }
-  /* ตารางขวา: ไม่ stretch — ขนาดตาม content */
-  .dash-col-right .dash-card-wrap { overflow: auto; }
+  .dash-col-right {
+    width: 100% !important;
+    margin-bottom: 28px !important;
+  }
+  /* รายวัน: today grid สูงสุด 2 cards เต็มกว้าง */
+  .dash-col-left .dash-today-grid {
+    grid-template-columns: 1fr 1fr !important;
+    max-width: 720px !important;
+  }
+  .dash-col-right .dash-card-wrap { overflow-x: auto; }
 
   /* Card-hdr ส้ม solid (ตามที่ขอ "เพิ่มสีบนกรอบ") */
   .card-hdr {
