@@ -2276,36 +2276,67 @@ body { background: var(--bg); color: var(--txt); }
     justify-content: center !important;
   }
 
-  /* (5) History: ตารางย่อตามจอ — overflow-x */
-  .hist-table-wrap {
-    overflow-x: auto !important;
+  /* (5) History: ตารางพอดีจอ ไม่ต้องเลื่อน */
+  .hist-wrap { max-width: none !important; padding: 28px 32px 48px !important; }
+  .hist-table-wrap { overflow-x: auto !important; }
+  .hist-table-wrap table { min-width: 0 !important; width: 100%; table-layout: auto; }
+  .hist-table-wrap th,
+  .hist-table-wrap td {
+    padding: 8px 10px !important;
+    font-size: 12.5px !important;
+    white-space: nowrap;
   }
-  .hist-table-wrap table { min-width: 1100px; }
+  .hist-table-wrap th { font-size: 11px !important; }
 
   /* (2) ย่อ input ที่ยาวเกิน — เหลือ ~30% */
   #submitter_name { max-width: 280px !important; }
   #customer, #labour_hour, #labour_baht { max-width: 200px !important; }
+  /* (2) Customer & Labour: 3 inputs ชิดซ้าย ไม่กระจายเต็มแถว */
+  .card:has(#customer) .field-grid {
+    grid-template-columns: 220px 220px 220px !important;
+    justify-content: start !important;
+    gap: 14px !important;
+  }
+  /* (3) Plan Sale summary: 3 cards center + แคบลง */
+  .plan-summary {
+    max-width: 880px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  /* (3) Plan grid + summary: center บนหน้า */
+  .plan-grid {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 
-  /* (1) Dashboard 2-col: stats ซ้าย, ตาราง 30 วัน ขวา (stretch ความสูง) */
+  /* Sidebar: ปุ่ม logout สีแดง */
+  .desk-logout-btn {
+    background: rgba(220,38,38,.08) !important;
+    color: var(--red) !important;
+    font-weight: 700 !important;
+  }
+  .desk-logout-btn:hover {
+    background: var(--red) !important;
+    color: #fff !important;
+  }
+
+  /* (1) Dashboard ใหม่: stats เต็มแถวบน, ล่าง 2-col (รายวัน | 30 วันล่าสุด) */
+  .dash-stats-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 24px !important;
+  }
   .dash-grid-main {
     display: grid !important;
-    grid-template-columns: minmax(420px, 480px) 1fr !important;
+    grid-template-columns: minmax(360px, 440px) 1fr !important;
     gap: 24px !important;
-    align-items: stretch !important;
+    align-items: start !important;
   }
-  .dash-col-left { min-width: 0; }
-  .dash-col-right {
-    min-width: 0;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  .dash-col-right .dash-card-wrap {
-    flex: 1 !important;
-    overflow: auto !important;
-    display: flex;
-    flex-direction: column;
-  }
-  .dash-col-right .dash-card-wrap table { flex: 1; }
+  .dash-col-left,
+  .dash-col-right { min-width: 0; }
+  /* ตารางขวา: ไม่ stretch — ขนาดตาม content */
+  .dash-col-right .dash-card-wrap { overflow: auto; }
 
   /* Card-hdr ส้ม solid (ตามที่ขอ "เพิ่มสีบนกรอบ") */
   .card-hdr {
@@ -2683,12 +2714,19 @@ body { background: var(--bg); color: var(--txt); }
           <button class="btn btn-sm" onclick="loadDash()" style="background:#f1f5f9;color:#475569;flex-shrink:0">🔄 รีเฟรช</button>
         </div>
 
-        <!-- 2-col layout: stats (left) + 30-day table (right) -->
+        <!-- รายเดือน — 4 stats เต็มแถว (บน) -->
+        <div id="dashMonthTitle" class="dash-sec-title">สรุปรายเดือน</div>
+        <div class="dash-stats-grid dash-stats-row" id="dashStatsGrid">
+          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
+          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
+          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
+          <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
+        </div>
+
+        <!-- 2-col: รายวัน (ซ้าย) + 30 วันล่าสุด (ขวา) -->
         <div class="dash-grid-main">
 
-          <!-- LEFT: daily + monthly stats stacked -->
           <div class="dash-col-left">
-            <!-- รายวัน -->
             <div class="dash-upper-left">
               <div class="dash-sec-title">สรุปรายวัน</div>
               <div class="dash-date-row">
@@ -2706,19 +2744,8 @@ body { background: var(--bg); color: var(--txt); }
                 <div class="dash-today-card"><div class="dtc-slot">🌙 รอบสิ้นวัน</div><div class="dtc-status" style="color:#94a3b8">⏳ กำลังโหลด...</div></div>
               </div>
             </div>
-            <!-- รายเดือน -->
-            <div class="dash-upper-right">
-              <div id="dashMonthTitle" class="dash-sec-title" style="margin-top:24px">สรุปรายเดือน</div>
-              <div class="dash-stats-grid" id="dashStatsGrid">
-                <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Actual Sale</div></div>
-                <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">% ของ Plan</div></div>
-                <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Trans/วัน</div></div>
-                <div class="dash-stat"><div class="ds-val">-</div><div class="ds-lbl">Labour %</div></div>
-              </div>
-            </div>
           </div>
 
-          <!-- RIGHT: 30-day table (fills space) -->
           <div class="dash-col-right">
             <div class="dash-sec-title">30 วันล่าสุด <span style="font-weight:400;text-transform:none">(รอบสิ้นวัน)</span></div>
             <div class="dash-card-wrap">
